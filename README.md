@@ -1,4 +1,4 @@
-# microrechner
+# Microrechner
 
 ## Projektplan
 
