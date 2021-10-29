@@ -11,4 +11,4 @@
 - **HW (VHDL):** Bottom-Up Verfahren ALU, Register,.... (Jeder Block/Komponente in eine einzelne vhd Datei) --UP--> Chipsatz (Idee)
 - **Software:** Python, Java, C, .... --schreiben--> Assembler --durch Funktion/Methoden (Decode, ....)--> Opcode (32-Bit dargestellt) (ISA-Simulator)
 
-(Eventuell Komponenten in Prozessen beschreiben ----- Speicher: Bereitstellung von generischen Speichermodel)
+**(Eventuell Komponenten in Prozessen beschreiben ----- Speicher: Bereitstellung von generischen Speichermodel)**
