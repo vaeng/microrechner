@@ -16,3 +16,21 @@ _"A Processor must execute a sequence of instructions, where each instruction pe
 | Arithmetic and logical operations | Arithmetic and logical operations only use register operands (loa/store architecure      |
 
 And many more....
+
+## Decoding of the Instruction set
+The encoding of a Instruction is there, because the Machine (CPU) doesn't understand any text.
+So to resolve this the text must be encoded in a specific byte format (in RISC 32 Bit). So: Text -transform-> Byte -Input-> CPU.
+% TODO
+
+## Decoding of the Instruction set
+The decoding plays a role in the CPU to "decode" the byte sequence via an AddressDecode (Demultiplexer). So if
+we chunked the byte sequence, the demultiplexer gives those bytes to the other components of the CPU (like PC, ALU, Registerfile, ....)
+% TODO
+
+
+
+
+
+
+
+
