@@ -13,7 +13,7 @@ _"A Processor must execute a sequence of instructions, where each instruction pe
 | ------------- |:------------- |
 | A large number of instructions| Many fewer instructions—typically less than 100 |
 | Variable-size encodings. x86-64 instructions can range from 1 to 15 bytes      |    Fixed-length encodings. Typically all instructions are encoded as 4 bytes. |
-| Arithmetic and logical operations | Arithmetic and logical operations only use register operands (loa/store architecure      |
+| Arithmetic and logical operations can directly manipulate the RAM | Arithmetic and logical operations only use register operands (loa/store architecure      |
 
 And many more....
 
