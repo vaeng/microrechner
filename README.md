@@ -19,7 +19,7 @@ And many more....
 
 ## Encoding of the Instruction set
 The encoding of a Instruction is there, because the Machine (CPU) doesn't understand any text.
-So to resolve this the text must be encoded in a specific byte format (in RISC 32 Bit). So: Text -transform-> Byte -Input-> CPU.
+So to resolve this the text must be encoded in a specific byte format (in RISC 32 Bit). So: Text -transform-> Byte -Input-> CPU
 % TODO
 
 ## Decoding of the Instruction set
