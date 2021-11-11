@@ -52,7 +52,7 @@ Integer computational instructions are either encoded as register-immediate oper
 #### Integer Register-Immediate Instructions:
   - ADDI (Add imidiate): sign-extended 12-bit immediate to register rs1 (ADDI rd, rs1, 0)
   - SLTI (set less than immediate): "rd ? if rs1 < signextended immediate : 0;"   
-  - ANDI, ORI, XORI (logical operations): perform bitwise OP := AND, OR, and XOR; rd = rs1 OP sign-extended 12-bit immediate
+  - ANDI, ORI, XORI (logical operations): perform bitwise OP := AND, OR, XOR; "rd = rs1 OP sign-extended 12-bit immediate"
   - SRLI (logical right shift): zeros are shifted into the upper bits
   - SRAI (arithmetic right shift): the original sign bit is copied into the vacated upper bits
   - SLLI (logical left shift): zeros are shifted into the lower bits 
