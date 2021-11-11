@@ -28,7 +28,7 @@ we chunked the byte sequence, the demultiplexer gives those bytes to the other c
 % TODO
 
 
-## Plan (objective)
+## Further Ideas (possible objective)
 Because the RISC-V architecture is flexible (backward -and forwardcompatible) we could extend a subset of one RISV-V
 architecture with a subset of Instructions for ML based operations, i.e. [convulutions](https://en.wikipedia.org/wiki/Convolution) for CNNs, .... (Take ideas from the [Paper](ideas/ISA_ML.pdf), see also this [overview](https://dl.acm.org/doi/fullHtml/10.1145/3331469))
 % TODO
