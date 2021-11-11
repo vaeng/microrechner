@@ -34,4 +34,134 @@ architecture with a subset of Instructions for ML based operations, i.e. [convul
 
 
 
+## ISA RISV-V RV32I
+
+![RISC-V base instruction formats](Encoding.png)
+
+![RISC-V base instruction formats](Encoding.png)
+
+
+### Integer Computational Instructions:
+
+Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format.
+
+_Note: did not include special instruction-set support for overflow checks on integer arithmetic operations in the base instruction set; overflow checks can be implemented in RISC-V branches_
+
+
+  #### Integer Register-Immediate Instructions:
+  ADDI (Add imidiate): sign-extended 12-bit immediate to register rs1 (ADDI rd, rs1, 0)
+  SLTI (set less than immediate): "rd ? if rs1 < signextended immediate : 0;"   
+  ANDI, ORI, XORI (logical operations): perform bitwise OP := AND, OR, and XOR; rd = rs1 OP sign-extended 12-bit immediate
+  SRLI (logical right shift): zeros are shifted into the upper bits
+  SRAI (arithmetic right shift): the original sign bit is copied into the vacated upper bits
+  SLLI (logical left shift): zeros are shifted into the lower bits 
+  LUI (load upper immediate): used to build 32-bit constants, i.e. places the U-immediate value in the top 20 bits of the destination register rd, filling in the lowest 12 bits with zeros.
+  AUIPC (add upper immediate to pc): is used to build pc-relative addresses
+  
+  #### Integer Register-Register Operations:
+  ADD, SUB: addition of rs1 and rs2; rd = rs1 + rs2; ADD rd rs1 rs2
+  SLT, SLTU (signed, unsigned compares respectively): rd ? if rs1 < rs2 : 0;
+  AND, OR, XOR (perform bitwise logical)
+  SLL, SRL, SRA (logical left, logical right, arithmetic right shifts): value in "rs1 shift rs2"
+  NOP (Instruction) := ADDI x0, x0, 0 --> NOP for Pipeline "Bubbles"
+
+
+### Control Transfer Instructions:
+
+  #### Unconditional Jumps
+  JAL(jump and link): JAL stores the address of the instruction following the jump (pc+4) into register rd
+  JALR (indirect jump instruction): see Implementation details in spec S.21
+
+
+  #### TODO Conditional Jumps 
+
+
+
+
+### Environment Call and Breakpoints:
+  
+ SYSTEM instructions are used to access system functionality that might require privileged ac- cess and are encoded using the I-type instruction format.
+
+  ECALL: Service request to the execution environment (normal CALL)
+  EBREAK: Instruction is used to return control to a debugging environment. (Normal BREAK)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In = {}
+NIn = {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
