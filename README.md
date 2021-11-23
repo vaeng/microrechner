@@ -39,7 +39,7 @@ architecture with a subset of Instructions for ML based operations, i.e. [convul
 
 ![RISC-V base instruction formats](Encoding.png)
 
-![RISC-V base instruction formats](ISA.png)
+![RISC-V base instruction formats](isa.pdf)
 
 
 ### Integer Computational Instructions:
