@@ -98,8 +98,44 @@ Offset is sign-extended and added to address of branch instruction.
   - ECALL: Service request to the execution environment (normal CALL)
   - EBREAK: Instruction is used to return control to a debugging environment. (Normal BREAK)
 
-In = {}
-NIn = {}
+## VHDL
+
+#### Simulation
+Consider:
+
+    '''vhdl
+    library IEEE;                     
+    use IEEE.Std_Logic_1164.all;   
+    
+    entity DELTA is                      
+    port (A, B : in std_ulogic;      
+          Y, Z : out std_ulogic);     
+    end DELTA;
+    architecture EXAMPLE of DELTA is 
+    signal X : std_ulogic;
+    begin
+    process (A, B, X) 
+    begin
+      Y <= A;
+      X <= B;
+      Z <= X;
+    end process;
+    end EXAMPLE;
+    '''
+    
+- Simulation step
+  1. Event on B (first delta cycle), future value of
+    1.1. Y receives the current value of A (no change)
+    1.2 X receives the current value of B ( new value)
+    1.3 Z receives the current value of X (no change)
+    1.4 signal update
+  2. Event on X (second delta cycle), future value of
+    2.1. Y receives the current value of A (no change)
+    2.2. X receives the current value of B (no change)
+    2.3. Z receives the current value of X (new value)
+    2.4. signal update
+
+  3.No future events on A, B, X
 
 
 

@@ -58,7 +58,7 @@ package riscy_package is
     constant FF_SLLI : func_7 := "0000000";
     constant FF_SRLI : func_7 := "0000000";
     constant FF_SRAI : func_7 := "0100000";
-    constant FF_ADD  : func_7 := "0000000";
+    constant FF_operations  : func_7 := "0000000";
     constant FF_SUB  : func_7 := "0100000";
     constant FF_SLL  : func_7 := "0000000";
     constant FF_SLT  : func_7 := "0000000";
