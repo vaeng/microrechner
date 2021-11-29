@@ -122,20 +122,19 @@ Consider:
     end process;
     end EXAMPLE;
     '''
-    
-- Simulation step
-  1. Event on B (first delta cycle), future value of
-    1.1. Y receives the current value of A (no change)
-    1.2 X receives the current value of B ( new value)
-    1.3 Z receives the current value of X (no change)
-    1.4 signal update
-  2. Event on X (second delta cycle), future value of
-    2.1. Y receives the current value of A (no change)
-    2.2. X receives the current value of B (no change)
-    2.3. Z receives the current value of X (new value)
-    2.4. signal update
 
-  3.No future events on A, B, X
+Simulation step
+  + Event on B (first delta cycle), future value of
+    - Y receives the current value of A (no change)
+    - X receives the current value of B ( new value)
+    - Z receives the current value of X (no change)
+    - signal update
+  + Event on X (second delta cycle), future value of
+    - Y receives the current value of A (no change)
+    - X receives the current value of B (no change)
+    - Z receives the current value of X (new value)
+    - signal update
+  + No future events on A, B, X
 
 
 
