@@ -14,15 +14,16 @@ package riscy_package is
 
     -- Instruction field definitions.
     -- RV32I opcode definitions:
-    constant OP_LUI    : opcode := "0110111";
-    constant OP_AUIPC  : opcode := "0010111";
     constant OP_JAL    : opcode := "1101111";
     constant OP_JALR   : opcode := "1100111";
     constant OP_BRANCH : opcode := "1100011";
+    constant OP_LUI    : opcode := "0110111";
+    constant OP_REG    : opcode := "0110011";
     constant OP_LOAD   : opcode := "0000011";
     constant OP_STORE  : opcode := "0100011";
-    constant OP_REG    : opcode := "0110011";
+    constant OP_AUIPC  : opcode := "0010111";
     constant OP_IMM    : opcode := "0010011";
+    
     -- RV32I "funct3" bits. These select different functions with
     -- R-type, I-type, S-type, and B-type instructions.
     constant F_JALR   : func_3 := "000";
@@ -34,7 +35,7 @@ package riscy_package is
     constant F_BGEU   : func_3 := "111";
     constant F_LW     : func_3 := "010";
     constant F_SW     : func_3 := "010";
-    constant F_ADDI   : func_3 := "000";
+    constant F_ADDI   : func_3 := "000"; -- NOP is encoded as ADDI x0, x0, 0.
     constant F_SLTI   : func_3 := "010";
     constant F_SLTIU  : func_3 := "011";
     constant F_XORI   : func_3 := "100";
@@ -53,21 +54,22 @@ package riscy_package is
     constant F_SRA    : func_3 := "101";
     constant F_OR     : func_3 := "110";
     constant F_AND    : func_3 := "111";
+    
     -- RV32I "funct7" bits. Along with the "funct3" bits, these select
     -- different functions with R-type instructions.
-    constant FF_SLLI : func_7 := "0000000";
-    constant FF_SRLI : func_7 := "0000000";
-    constant FF_SRAI : func_7 := "0100000";
-    constant FF_operations  : func_7 := "0000000";
-    constant FF_SUB  : func_7 := "0100000";
-    constant FF_SLL  : func_7 := "0000000";
-    constant FF_SLT  : func_7 := "0000000";
-    constant FF_SLTU : func_7 := "0000000";
-    constant FF_XOR  : func_7 := "0000000";
-    constant FF_SRL  : func_7 := "0000000";
-    constant FF_SRA  : func_7 := "0100000";
-    constant FF_OR   : func_7 := "0000000";
-    constant FF_AND  : func_7 := "0000000";
+    constant FF_SUB    : func_7 := "0100000";
+    constant FF_SRAI   : func_7 := "0100000";
+    constant FF_SRA    : func_7 := "0100000";
+    constant FF_SLLI   : func_7 := "0000000";
+    constant FF_SRLI   : func_7 := "0000000";
+    constant FF_ADD    : func_7 := "0000000";
+    constant FF_SLL    : func_7 := "0000000";
+    constant FF_SLT    : func_7 := "0000000";
+    constant FF_SLTU   : func_7 := "0000000";
+    constant FF_XOR    : func_7 := "0000000";
+    constant FF_SRL    : func_7 := "0000000";
+    constant FF_OR     : func_7 := "0000000";
+    constant FF_AND    : func_7 := "0000000";
 
     -- ID numbers for different types of traps (exceptions). 
     -- TRAP_IMIS  = 1
@@ -76,5 +78,4 @@ package riscy_package is
     -- TRAP_LMIS  = 4
     -- TRAP_SMIS  = 6
     
-
 end riscy_package;
