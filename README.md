@@ -100,7 +100,7 @@ Offset is sign-extended and added to address of branch instruction.
 
 ## VHDL
 
-#### Simulation
+### Simulation
 Consider:
 
     '''vhdl
