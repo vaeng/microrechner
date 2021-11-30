@@ -57,19 +57,19 @@ package riscy_package is
     
     -- RV32I "funct7" bits. Along with the "funct3" bits, these select
     -- different functions with R-type instructions.
-    constant FF_SUB    : func_7 := "0100000";
+    constant FF_SUB    : func_7 := "0100000"; --
     constant FF_SRAI   : func_7 := "0100000";
-    constant FF_SRA    : func_7 := "0100000";
-    constant FF_SLLI   : func_7 := "0000000";
-    constant FF_SRLI   : func_7 := "0000000";
-    constant FF_ADD    : func_7 := "0000000";
-    constant FF_SLL    : func_7 := "0000000";
-    constant FF_SLT    : func_7 := "0000000";
-    constant FF_SLTU   : func_7 := "0000000";
-    constant FF_XOR    : func_7 := "0000000";
-    constant FF_SRL    : func_7 := "0000000";
-    constant FF_OR     : func_7 := "0000000";
-    constant FF_AND    : func_7 := "0000000";
+    constant FF_SRA    : func_7 := "0100000"; --
+    constant FF_SLLI   : func_7 := "0000000"; --
+    constant FF_SRLI   : func_7 := "0000000"; --
+    constant FF_ADD    : func_7 := "0000000"; --
+    constant FF_SLL    : func_7 := "0000000"; --
+    constant FF_SLT    : func_7 := "0000000"; --
+    constant FF_SLTU   : func_7 := "0000000"; --
+    constant FF_XOR    : func_7 := "0000000"; --
+    constant FF_SRL    : func_7 := "0000000"; --
+    constant FF_OR     : func_7 := "0000000"; --
+    constant FF_AND    : func_7 := "0000000"; --
 
     -- ID numbers for different types of traps (exceptions). 
     -- TRAP_IMIS  = 1
