@@ -102,7 +102,10 @@ architecture behavioral of riscy is
                 if alu_sel_f = F_SW then alu_out <= val_a + val_b; end if;
             when OP_LOAD =>
                 if alu_sel_f = F_LW then alu_out <= val_a + val_b; end if;
-            when 
+            when OP_JAL | OP_JALR => val_a + val_b; -- val_a == PC, val_b == 12bit to 32 bit sign extended
+
+            when LUI => alu_out() <= val_b(20 downto 0);
+
             when others => alu_out <= x"00000000";
 
         end case;       
