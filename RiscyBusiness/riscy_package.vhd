@@ -1,6 +1,5 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use ieee.NUMERIC_STD.all;
 
 package riscy_package is
@@ -36,13 +35,13 @@ package riscy_package is
     constant F_LW     : func_3 := "010";
     constant F_SW     : func_3 := "010";
     constant F_ADDI   : func_3 := "000"; -- NOP is encoded as ADDI x0, x0, 0.
-    constant F_SLTI   : func_3 := "010";
-    constant F_SLTIU  : func_3 := "011";
-    constant F_XORI   : func_3 := "100";
-    constant F_ORI    : func_3 := "110";
-    constant F_ANDI   : func_3 := "111";
-    constant F_SLLI   : func_3 := "001";
-    constant F_SRLI   : func_3 := "101";
+    constant F_SLTI   : func_3 := "101"; --
+    constant F_SLTIU  : func_3 := "011"; --
+    constant F_XORI   : func_3 := "100"; --
+    constant F_ORI    : func_3 := "110"; -- 
+    constant F_ANDI   : func_3 := "111"; --
+    constant F_SLLI   : func_3 := "001"; --
+    constant F_SRLI   : func_3 := "101"; --
     constant F_SRAI   : func_3 := "101"; --
     constant F_ADD    : func_3 := "000"; --
     constant F_SUB    : func_3 := "000"; --
