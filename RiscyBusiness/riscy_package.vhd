@@ -16,9 +16,9 @@ package riscy_package is
     -- RV32I opcode definitions:
     constant OP_JAL    : opcode := "1101111";
     constant OP_JALR   : opcode := "1100111";
-    constant OP_BRANCH : opcode := "1100011";
+    constant OP_BRANCH : opcode := "1100011"; -- branch operations
     constant OP_LUI    : opcode := "0110111";
-    constant OP_REG    : opcode := "0110011";
+    constant OP_REG    : opcode := "0110011"; -- register operations
     constant OP_LOAD   : opcode := "0000011";
     constant OP_STORE  : opcode := "0100011";
     constant OP_AUIPC  : opcode := "0010111";
@@ -43,22 +43,22 @@ package riscy_package is
     constant F_ANDI   : func_3 := "111";
     constant F_SLLI   : func_3 := "001";
     constant F_SRLI   : func_3 := "101";
-    constant F_SRAI   : func_3 := "101";
-    constant F_ADD    : func_3 := "000";
-    constant F_SUB    : func_3 := "000";
-    constant F_SLL    : func_3 := "001";
-    constant F_SLT    : func_3 := "010";
-    constant F_SLTU   : func_3 := "011";
-    constant F_XOR    : func_3 := "100";
-    constant F_SRL    : func_3 := "101";
-    constant F_SRA    : func_3 := "101";
-    constant F_OR     : func_3 := "110";
-    constant F_AND    : func_3 := "111";
+    constant F_SRAI   : func_3 := "101"; --
+    constant F_ADD    : func_3 := "000"; --
+    constant F_SUB    : func_3 := "000"; --
+    constant F_SLL    : func_3 := "001"; --
+    constant F_SLT    : func_3 := "010"; --
+    constant F_SLTU   : func_3 := "011"; --
+    constant F_XOR    : func_3 := "100"; --
+    constant F_SRL    : func_3 := "101"; --
+    constant F_SRA    : func_3 := "101"; --
+    constant F_OR     : func_3 := "110"; --
+    constant F_AND    : func_3 := "111"; --
     
     -- RV32I "funct7" bits. Along with the "funct3" bits, these select
     -- different functions with R-type instructions.
     constant FF_SUB    : func_7 := "0100000"; --
-    constant FF_SRAI   : func_7 := "0100000";
+    constant FF_SRAI   : func_7 := "0100000"; --
     constant FF_SRA    : func_7 := "0100000"; --
     constant FF_SLLI   : func_7 := "0000000"; --
     constant FF_SRLI   : func_7 := "0000000"; --

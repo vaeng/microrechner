@@ -1,7 +1,7 @@
 GHDL_CMD = ghdl
 GHDL_FLAGS = --ieee=synopsys --std=08
 
-all: clean compile run
+all: compile # clean  run
 
 compile: 
 #mkdir work
@@ -12,6 +12,6 @@ compile:
 #run:
 #	@$(GHDL_CMD) -r $(GHDL_FLAGS) riscy --vcd=riscy.ghw
 
-clean:
+# clean:
 # rm -rf work
 # rm -f riscy.ghw

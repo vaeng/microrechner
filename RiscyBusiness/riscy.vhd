@@ -26,9 +26,11 @@ architecture behavioral of riscy is
 
     begin
         
+        -- alu_arithmetic aber man muss val_b und alu_sel_ff unterscheiden da zwei bedeutung. val_b ist sowohl lower 5bit immidiate wert vom I-type
+        -- als auch wert vom register rs2. alu_sel_ff ist sowohl func7 als auch imm[11:5] vom imm[11:0] I-type field.
+        -- alu_sel_f, alu_sel_ff steuersignale
       alu_arithmetic: process(val_a, val_b, alu_sel_f, alu_sel_ff, alu_out) -- val_a := value of rs1; val_b := value of rs2; alu_out := value of rd
       alias lower_bits is val_b(4 downto 0); -- used also for "lower 5 bits of the I-immediate field"
-      alias immidiate_field is val_b(4 downto 0);
       begin
         case(alu_sel_ff) is
             when "0000000" => -- operations "0000000" class
@@ -45,8 +47,8 @@ architecture behavioral of riscy is
                         alu_out <= x"00000000";  
                     end if;
                 end if;
-                if alu_sel_f = F_SLT then -- SLTU rd, x0, rs2 sets rd to 1 if rs2 is not equal to zero, otherwise sets rd to zero
-                    if (unsigned(val_a) /= unsigned(val_b)) then 
+                if alu_sel_f = F_SLTU then -- SLTU rd, x0, rs2 sets rd to 1 if rs2 is not equal to zero, otherwise sets rd to zero
+                    if (x"00000000" /= unsigned(val_b)) then 
                         alu_out <= x"00000001"; 
                     else 
                         alu_out <= x"00000000";
@@ -54,21 +56,45 @@ architecture behavioral of riscy is
                 end if;
                 if alu_sel_f = F_SLL then alu_out <= std_logic_vector(unsigned(val_a) sll to_integer(unsigned(lower_bits))); end if;
                 if alu_sel_f = F_SRL then alu_out <= std_logic_vector(unsigned(val_a) srl to_integer(unsigned(lower_bits))); end if;
+                if alu_sel_f = F_SLLI then alu_out <= std_logic_vector(unsigned(val_a) sll to_integer(unsigned(lower_bits))); end if;
+                if alu_sel_f = F_SRLI then alu_out <= std_logic_vector(unsigned(val_a) srl to_integer(unsigned(lower_bits))); end if;
             when "0100000" => -- operations "0100000" class
                 if alu_sel_f = F_SUB then alu_out <= val_b - val_a; end if;
                 if alu_sel_f = F_SRA then alu_out <= std_logic_vector(unsigned(val_a) sra to_integer(unsigned(lower_bits))); end if;
                 if alu_sel_f = F_SRAI then alu_out <= std_logic_vector(unsigned(val_a) sra to_integer(unsigned(lower_bits))); end if;
-            when others => alu_out <= val_a + val_b;
+            when alu_sel_f = F_ANDI then alu_out <= val_a and val_b; -- val_b sign-extended 12-bit immediate
+            when alu_sel_f = F_ORI then alu_out <= val_a or val_b;
+            when alu_sel_f = F_XORI then alu_out <= val_a or val_b;
+            when alu_sel_f = F_SLTIU then 
+                if (unsigned(val_a) < unsigned(val_b)) then 
+                            alu_out <= x"00000001"; 
+                        else 
+                            alu_out <= x"00000000";
+                        end if;
+                    end if;
+            when alu_sel_f = F_SLTI then
+                if (signed(val_a) < signed(val_b)) then 
+                            alu_out <= x"00000001"; 
+                        else 
+                            alu_out <= x"00000000";
+                        end if;
+                end if;
+            when alu_sel_f = F_ADDI then alu_out <= val_a + val_b; end if;
+            when alu_sel_f = F_LW or F_SW then  alu_out <= val_a + val_b; end if;
         end case;                          
              
       end process ; 
 
+            -- high active für die enable signale nutzen
         register_file : process
         begin
         wait; 
         end process ; 
 
-        pipeline_stufe_xyz: process -- für jede pipleinestufe
+        -- für jede pipleinestufe; jede pipline stufe trägt die kontroll signale (enable) und aktivert damit enstprechend die Funktionseinheiten.
+        -- Bsp lw und sw haben func3=010 gleich, jedoch hilft der opcode (welcher mitgegeben wird) zu entscheiden ob nun in der memory stage
+        -- RAM gelesen oder geschrieben wird. Somit triggert jede piplinestufe in dem eigenem stage die Funktionseinheiten (Register/Speicher).
+        pipeline_stufe_xyz: process   
         begin
         wait;
         end process ;
