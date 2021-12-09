@@ -9,12 +9,11 @@ package riscy_package is
     subtype func_3 is std_logic_vector(2 downto 0);
     subtype func_7 is std_logic_vector(6 downto 0);
     type bit_32_array is array (integer range <>) of bit_32;
- 
 
     -- Instruction field definitions.
     -- RV32I opcode definitions:
-    constant OP_JAL    : opcode := "1101111";
-    constant OP_JALR   : opcode := "1100111";
+    constant OP_JAL    : opcode := "1101111"; --
+    constant OP_JALR   : opcode := "1100111"; --
     constant OP_BRANCH : opcode := "1100011"; -- branch operations
     constant OP_LUI    : opcode := "0110111";
     constant OP_REG    : opcode := "0110011"; -- register operations
@@ -31,9 +30,9 @@ package riscy_package is
     constant F_BLT    : func_3 := "100";
     constant F_BGE    : func_3 := "101";
     constant F_BLTU   : func_3 := "110";
-    constant F_BGEU   : func_3 := "111";
-    constant F_LW     : func_3 := "010";
-    constant F_SW     : func_3 := "010";
+    constant F_BGEU   : func_3 := "111"; 
+    constant F_LW     : func_3 := "010"; --
+    constant F_SW     : func_3 := "010"; --
     constant F_ADDI   : func_3 := "000"; -- NOP is encoded as ADDI x0, x0, 0.
     constant F_SLTI   : func_3 := "101"; --
     constant F_SLTIU  : func_3 := "011"; --

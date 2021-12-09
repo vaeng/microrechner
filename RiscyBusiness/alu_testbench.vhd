@@ -43,16 +43,63 @@ begin
     sel_opcode => sel_opcode
   );
 
-    process
+  -- test overflow
+  test_proc1 : process is
   begin
-      a <= "00000000000000000000000000000001";
-      b <= "00000000000000000000000000000001";
-      sel_f <= "000";
-      sel_ff <= "0000000";
-      sel_opcode <= OP_REG;
+    a <= x"ffffffff";
+    b <= x"00000001";
+    sel_f <= F_ADD;
+    sel_ff <= "0000000";
+    sel_opcode <= OP_REG;
+    wait for 100 ns;
+    wait;
+  end process test_proc1;
+  
+  -- test underflow/negatives
+  test_proc2 : process is 
+  begin
+    a <= x"00000000";
+    b <= x"00000001";
+    sel_f <= F_SUB;
+    sel_ff <= "01000000";
+    sel_opcode <= OP_REG;
+    wait for 50 ns;
+    wait;
+  end process test_proc2;
 
-      wait for 100 ns;
+  -- test leftshift
+  test_proc3 : process is
+  begin
+    a <= "00000000000000000000000000000001"; -- erwartet dann ...010
+    -- b <= -- keine value nötig: null
+    sel_f <= F_SLL;
+    sel_ff <= "00000000";
+    sel_opcode <= OP_REG;
+    wait for 25 ns;
+    wait;
+  end process test_proc3;
+
+  -- test store
+  test_proc4 : process is
+    begin
+      a <= x"00000001";
+      b <= x"10000000";
+      sel_f <= F_SW;
+      sel_ff <= x"11000000"; --other sel_ff <- is dat richtig?
+      sel_opcode <= OP_STORE;
+      wait for 6 ns;
       wait;
-  end process ; 
+    end process test_proc4;
 
-end;
+    -- test load
+    test_proc5 : process is
+    begin
+        a <= x"00000001";
+        b <= x"10000000";
+        sel_f <= F_LW;
+        sel_ff <= x"11000000"; --other sel_ff also nicht 01 oder 00 <- is dat richtig?
+        sel_opcode <= OP_LOAD;
+      wait for 12 ns;
+      wait;
+    end process test_proc5;
+end architecture behave;

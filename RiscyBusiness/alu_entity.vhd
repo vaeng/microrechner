@@ -24,7 +24,7 @@ begin
       alias lower_bits is val_b(4 downto 0); -- used also for "lower 5 bits of the I-immediate field"
       begin
         case(sel_opcode) is
-            when OP_REG => 
+            when OP_REG =>
                 case(alu_sel_ff) is
                     when "0000000" => -- operations "0000000" class
                         if alu_sel_f = F_ADD then alu_out <=  val_a + val_b; end if;
@@ -36,7 +36,7 @@ begin
                         if alu_sel_f = F_SLT then  -- set less then writing 1 to rd if rs1 < rs2, 0 otherwise.
                             if (signed(val_a) < signed(val_b)) then 
                                 alu_out <= x"00000001"; 
-                            else 
+                            else
                                 alu_out <= x"00000000";  
                             end if;
                         end if;
@@ -101,3 +101,6 @@ begin
       end process ;
 
 end behah ; -- behah
+
+
+

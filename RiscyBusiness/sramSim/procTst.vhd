@@ -33,8 +33,8 @@ begin
   const1 <= '1';
 
   -- memories		------------------------------------------------------
-  instMemI: sram2	generic map (	addrWd	=> 8,
-					dataWd	=> 32,
+  instMemI: sram2	generic map(addrWd	=> 8,
+					dataWd	=> 16,
 					fileID	=> "instMem.dat")
 			port map    (	nCS	=> const0,
 					nWE	=> const1,
@@ -43,7 +43,7 @@ begin
 					dataOut	=> iDataO,
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	addrWd	=> 8,
-					dataWd	=> 32,
+					dataWd	=> 16,
 					fileID	=> "dataMem.dat")
 			port map    (	nCS	=> const0,
 					nWE	=> dnWE,
@@ -53,7 +53,7 @@ begin
 					fileIO	=> dCtrl);
 
   -- pipe processor	------------------------------------------------------
-  pipeProcI: pipeProc	port map    (	clk	=> clk,
+  pipeProcI: pipeProc	port map(	clk	=> clk,
 					nRst	=> nRst,
 					iAddr	=> iAddr,
 					iData	=> iDataO,
