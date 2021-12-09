@@ -65,12 +65,13 @@ def hex2binary(hexString, binLength):
 # int2bin takes an integer and returns a binary string of length binLength
 def int2bin(num, binLength):
     s = "{0:0" + str(binLength) + "b}"
-    return s.format(num)
-
+    return s.format(int(num))
+ 
 def main():
     parser = argparse.ArgumentParser(description='Assembles to byte code.')
     parser.add_argument('input_file', type=str, help='Path to the file that will be assembled.')
     parser.add_argument('output_file', type=str, help='Name of the file to output the bytecode to.')
+    ram_position = 0
 
     args = parser.parse_args()
     outputlines = []
@@ -78,8 +79,6 @@ def main():
         with open(args.input_file, "r") as file_object:
             print('Assembling', args.input_file)
             for line in file_object.readlines():
-            
-                ram_position = 1
                 assCode = ""
                
                 instr, *arguments = re.split(',? +', line)
@@ -156,7 +155,8 @@ def main():
                     assCode = int2bin(0, 12) + get_register("ra") + "000" + get_register("zero") + OP_JALR
                 else: # Error for unknown codes
                      raise Exception(f"unknown operation: {instr}\n") 
-                outputlines.append(assCode)
+                outputlines.append(str(ram_position) + " " + assCode + "\n")
+                ram_position += 1
     
     except FileNotFoundError:
         print(args.input_file, 'could not be found.')

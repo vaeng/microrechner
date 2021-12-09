@@ -1,1 +1,2 @@
-addi x1, x4, 0
+addi t1, t4, 0
+addi t1, t4, 0
