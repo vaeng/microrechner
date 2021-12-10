@@ -139,7 +139,7 @@ architecture behavioral of riscy is
 
       address_decoder : process(ins_mem)
       begin
-        if ins_mem(6 downto 0) = OP_REG then
+        if ins_mem(6 downto 0) = OP_RER then
             sel_opcode <= ins_mem(6 downto 0);
             rd_signal <= ins_mem(11 downto 7);
             alu_sel_f <= ins_mem(14 downto 12);
