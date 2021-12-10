@@ -17,15 +17,40 @@ end;
 
 
 architecture behavioral of riscy is
+    
+    --signal to and out of the alu
     signal alu_out : bit_32;
     signal val_a : bit_32;
     signal val_b : bit_32;
+
+
+    --decode signals to the registerfile
+    signal ins_mem : bit_32;
     signal alu_sel_f : func_3;
     signal alu_sel_ff : func_7;
-    signal sel_opcode : opcode;
-    signal ins_mem : bit_32;
-    signal op_code_signal : opcode;
+    signal sel_opcode : opcode; -- fuer jeden stage einen neuen sel_opcode auswählen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
     signal rd_signal : bit_32(4 downto 0);
+    signal r1_signal : bit_32(4 downto 0);
+    signal r2_signal : bit_32(4 downto 0);
+
+    signal imm_signal_Itype : std_logic_vector(11 downto 0);
+    
+    signal imm_signal_Utype : std_logic_vector(20 downto 0);
+    
+    signal imm_signal_Stype : std_logic_vector(5 downto 0);
+    signal imm_signal_StypeTwo : std_logic_vector(7 downto 0);
+
+    signal imm_signal_Btype : std_logic;
+    signal imm_signal_BtypeTwo : std_logic_vector(3 downto 0);
+    signal imm_signal_BtypeThree : std_logic_vector(5 downto 0);
+    signal imm_signal_BtypeFour : std_logic;
+
+    signal imm_signal_Jtype : std_logic_vector(7 downto 0);
+    signal imm_signal_JtypeTwo : std_logic;
+    signal imm_signal_JtypeThree : std_logic_vector(9 downto 0);
+    signal imm_signal_JtypeFour : std_logic;
+
+
     
     begin
         -- alu_arithmetic aber man muss val_b und alu_sel_ff unterscheiden da zwei bedeutung. val_b ist sowohl lower 5bit immidiate wert vom I-type
@@ -115,15 +140,57 @@ architecture behavioral of riscy is
       address_decoder : process(ins_mem)
       begin
         if ins_mem(6 downto 0) = OP_REG then
-            op_code_signal <= ins_mem(6 downto 0);
+            sel_opcode <= ins_mem(6 downto 0);
             rd_signal <= ins_mem(11 downto 7);
             alu_sel_f <= ins_mem(14 downto 12);
-            rs1 <= ins_mem(19 downto 15);
-            rs2 <= ins_mem(24 downto 20);
+            r1_signal <= ins_mem(19 downto 15);
+            r2_signal <= ins_mem(24 downto 20);
             alu_sel_ff<= ins_mem(31 downto 25);
-
-        elsif expression then
-            
+        elsif ins_mem(6 downto 0) = OP_IMM then
+            sel_opcode <= ins_mem(6 downto 0);
+            rd_signal <= ins_mem(11 downto 7);
+            alu_sel_f <= ins_mem(14 downto 12);
+            r1_signal <= ins_mem(19 downto 15);
+            imm_signal_Itype <= ins_mem(31 downto 20);
+        elsif ins_mem(6 downto 0) = OP_LUI | ins_mem(6 downto 0) = OP_AUIPC then
+            sel_opcode <= ins_mem(6 downto 0);
+            rd_signal <= ins_mem(11 downto 7);
+            imm_signal_Utype <= ins_mem(31 downto 12);
+        if ins_mem(6 downto 0) = OP_LOAD then
+            sel_opcode <= ins_mem(6 downto 0);
+            rd_signal <= ins_mem(11 downto 7);
+            alu_sel_f <= ins_mem(14 downto 12);
+            r1_signal <= ins_mem(19 downto 15);
+            imm_signal_Itype <= ins_mem(31 downto 20);
+        if ins_mem(6 downto 0) = OP_STORE then
+            sel_opcode <= ins_mem(6 downto 0);
+            imm_signal_Stype <= ins_mem(11 downto 7);
+            alu_sel_f <= ins_mem(14 downto 12);
+            r1_signal <= ins_mem(19 downto 15);
+            r2_signal <= ins_mem(24 downto 20);
+            imm_signal_StypeTwo <= ins_mem(31 downto 25);
+        if ins_mem(6 downto 0) = OP_BRANCH then
+            sel_opcode <= ins_mem(6 downto 0);
+            imm_signal_Btype <= ins_mem(7);
+            imm_signal_BtypeTwo <= ins_mem(11 downto 8);
+            alu_sel_f <= ins_mem(14 downto 12);
+            r1_signal <= ins_mem(19 downto 15);
+            r2_signal <= ins_mem(24 downto 20);
+            imm_signal_BtypeThree <= ins_mem(30 downto 25);
+            imm_signal_BtypeFour <= ins_mem(31);
+        if ins_mem(6 downto 0) = OP_JAL then
+            sel_opcode <= ins_mem(6 downto 0);
+            rd_signal <= ins_mem(11 downto 7);
+            imm_signal_Jtype <= ins_mem(19 downto 12);
+            imm_signal_JtypeTwo <= ins_mem(20);
+            imm_signal_JtypeThree <= ins_mem(30 downto 21);
+            imm_signal_JtypeFour <= ins_mem(31);
+        if ins_mem(6 downto 0) = OP_JALR then
+            sel_opcode <= ins_mem(6 downto 0);
+            rd_signal <= ins_mem(11 downto 7);
+            alu_sel_f <= ins_mem(14 downto 12);
+            r1_signal <= ins_mem(19 downto 15);
+            imm_signal_Itype <= ins_mem(31 downto 20);
         end if;
           
       end process ; -- address_decoder

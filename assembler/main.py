@@ -153,6 +153,8 @@ def main():
                     assCode = int2bin(0, 12) + get_register("ra") + "000" + get_register("zero") + OP_JALR
                 elif instr == "call":
                     assCode = int2bin(0, 12) + get_register("ra") + "000" + get_register("zero") + OP_JALR
+                elif instr = "mv":
+                    assCode = int2bin(0, 12) + get_register(arguments[1]) + "000" + get_register(arguments[0]) + OP_IMM 
                 else: # Error for unknown codes
                      raise Exception(f"unknown operation: {instr}\n") 
                 outputlines.append(str(ram_position) + " " + assCode + "\n")
