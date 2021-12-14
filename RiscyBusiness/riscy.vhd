@@ -28,7 +28,7 @@ architecture behavioral of riscy is
     signal ins_mem : bit_32;
     signal alu_sel_f : func_3;
     signal alu_sel_ff : func_7;
-    signal sel_opcode : opcode; -- fuer jeden stage einen neuen sel_opcode auswählen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
+    signal sel_opcode : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
     signal rd_signal : bit_32(4 downto 0);
     signal r1_signal : bit_32(4 downto 0);
     signal r2_signal : bit_32(4 downto 0);
@@ -129,7 +129,7 @@ architecture behavioral of riscy is
                 if alu_sel_f = F_LW then alu_out <= val_a + val_b; end if;
             when OP_JAL | OP_JALR => val_a + val_b; -- val_a == PC, val_b == 12bit to 32 bit sign extended
 
-            when LUI => alu_out() <= val_b(20 downto 0);
+            when LUI => alu_out <= val_b(20 downto 0);
 
             when others => alu_out <= x"00000000";
 
