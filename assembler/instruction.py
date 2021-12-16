@@ -23,7 +23,7 @@ class Instruction:
         self.address = None
 
 
-        instr, *arguments = re.split(',? +', line)
+        instr, *arguments = re.split(',? |\(|\)+', line)
 
         if instr == "bne" or instr == "beq" or instr == "blt" or instr == "bge" or instr == "bltu":
             self.label = arguments[2]
@@ -33,7 +33,7 @@ class Instruction:
     def set_address(self, address):
         self.address = address
 
-    def getimmb(self, label_address):
+    def transform_immb_to_bytecode(self, label_address):
         #print(label_address, self.ram_position)
         imm_b = label_address - self.ram_position
         imm_b4_1 = (imm_b & 0x1e) << 7
@@ -76,7 +76,7 @@ class Instruction:
             "s8": "11001", #
             "s9": "11010", #
             "s10":"11011", #
-            "s11": "11100", #
+            "s11": "11100",#
             "t3": "11101", # Temporaries
             "t4": "11110", #
             "t5": "11111", #
@@ -86,36 +86,41 @@ class Instruction:
 
     # int2bin takes an integer and returns a binary string of length binLength
     def int2bin(self, num, binLength):
-        return Bits(int=int(num), length=binLength).bin
+        bits = None
+        if int(num) < 0: # denn bsp mit 23 funktioniert es nicht
+            bits = Bits(int=int(num), length=binLength).bin
+        else:
+            bits = "{0:0"+ str(binLength) + "b}"
+            bits = bits.format(int(num))
+        return bits
 
-    
     def get_byte_code(self):
-        instr, *arguments = re.split(',? +', self.line)
+        instr, *arguments = re.split(',? |\(|\)+', self.line)
 
         if instr == "lui":
             assCode = self.int2bin(arguments[1], 20) + self.get_register(arguments[0]) + OP_LUI
         elif instr == "auipc":
             assCode = self.int2bin(arguments[1], 20) + self.get_register(arguments[0]) + OP_AUIPC
         elif instr == "jal":
-            assCode = self.int2bin(arguments[1], 20) + self.get_register(arguments[0]) + OP_JAL
+            assCode =  self.int2bin((int(arguments[1]) & 0x100000) >> 20, 1) + self.int2bin((int(arguments[1]) & 0x7ff) >> 1, 10) + self.int2bin((int(arguments[1]) & 0x800) >> 11, 1) + self.int2bin((int(arguments[1]) & 0xff000) >> 12, 8) + self.get_register(arguments[0]) + OP_JAL
         elif instr == "jalr":
             assCode = self.int2bin(arguments[2], 12) + self.get_register(arguments[1]) + "000" + self.get_register(arguments[0]) + OP_JALR
         elif instr == "beq":             
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "000" + self.getimmb(self.address)[2] + OP_BRANCH #imm_b richtig anordnen
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "000" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH #imm_b richtig anordnen
         elif instr == "bne":
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "001" + self.getimmb(self.address)[2] + OP_BRANCH
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "001" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH
         elif instr == "blt":
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "100" + self.getimmb(self.address)[2] + OP_BRANCH
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "100" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH
         elif instr == "bge":
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "101" + self.getimmb(self.address)[2] + OP_BRANCH
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "101" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH
         elif instr == "bltu":
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "110" + self.getimmb(self.address)[2] + OP_BRANCH
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "110" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH
         elif instr == "bgeu":
-            assCode = self.getimmb(self.address)[0] + self.getimmb(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "111" + self.getimmb(self.address)[2] + OP_BRANCH
+            assCode = self.transform_immb_to_bytecode(self.address)[0] + self.transform_immb_to_bytecode(self.address)[1] + self.get_register(arguments[1]) + self.get_register(arguments[0]) + "111" + self.transform_immb_to_bytecode(self.address)[2] + OP_BRANCH
         elif instr == "lw":
-            assCode = self.int2bin(arguments[2], 12) + self.get_register(arguments[1]) + "010" + self.get_register(arguments[0]) + OP_LOAD
+            assCode = self.int2bin(arguments[1], 12) + self.get_register(arguments[2]) + "010" + self.get_register(arguments[0]) + OP_LOAD
         elif instr == "sw":
-            assCode = self.int2bin(arguments[3], 7) + self.get_register(arguments[2]) + self.get_register(arguments[1]) + "010" + self.int2bin(arguments[0], 5) + OP_STORE
+            assCode = self.int2bin((int(arguments[1]) >> 5), 7) + self.get_register(arguments[0]) + self.get_register(arguments[2]) + "010" + self.int2bin((int(arguments[1]) & 0b11111), 5) + OP_STORE
         elif instr == "addi":
             assCode = self.int2bin(arguments[2], 12) + self.get_register(arguments[1]) + "000" + self.get_register(arguments[0]) + OP_IMM
         elif instr == "slti":

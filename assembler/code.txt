@@ -2,5 +2,7 @@ addi t1, t4, 0
 addi t1, t4, 0
 bne s2, s4, test_label
 
+sw s2, 55(t2)
+
 test_label:
     addi t3, t5, 0

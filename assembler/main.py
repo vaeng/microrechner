@@ -15,6 +15,7 @@ def hex2binary(hexString, binLength):
     return s.format(int(hexString[1:], base=16)) #hexString
 
 def main():
+
     parser = argparse.ArgumentParser(description='Assembles to byte code.')
     parser.add_argument('input_file', type=str, help='Path to the file that will be assembled.')
     parser.add_argument('output_file', type=str, help='Name of the file to output the bytecode to.')
@@ -23,6 +24,7 @@ def main():
     outputlines = []
     instructions = [] # store each instruction memory
     ram_position = 0 # for the pc
+
 
     try:
         with open(args.input_file, "r") as file_object:
@@ -33,24 +35,27 @@ def main():
                 # print(line, type(line))
                 line = line.strip()
                 if ":" in line:
-                    label_position[line.replace(':', '')] = ram_position + 1
+                    label_position[line.replace(':', '')] = ram_position
                     continue
                 elif line == "":
                     continue
                 else:
                     inst = Instruction(ram_position, line)
                     instructions.append(inst)
-                    ram_position += 1
+                    ram_position += 4
 
     except FileNotFoundError:
         print(args.input_file, 'could not be found.')
+
 
     # replace labels with adresses 
     for instruction in instructions:
         label = instruction.label
         if label is not None:
             instruction.set_address(label_position[label])
-        outputlines.append(str(instruction.ram_position) + " " + instruction.get_byte_code() + "\n") 
+            print(instruction.address)
+        outputlines.append("{:20s} {:32s}\n".format(str(hex(instruction.ram_position)), instruction.get_byte_code())) 
+
 
     # write it
     try:
@@ -59,6 +64,10 @@ def main():
                 f.writelines(line)
     except FileNotFoundError:
         print(args.output_file, 'could not be found.')
+
+
+
+
 
 if __name__ == "__main__":
     main()
