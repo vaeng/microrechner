@@ -1,7 +1,6 @@
 library ieee;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.numeric_std.all;
+use ieee.numeric_std.all;
 
 use work.riscy_package.all;
 
@@ -22,11 +21,11 @@ architecture behave of alu_testbench is
       end component;
 
     -- inputs
-    signal a : bit_32 := (others => '0');
+   signal a : bit_32 := (others => '0');
    signal b : bit_32 := (others => '0');
    signal sel_f : func_3 := (others => '0');
    signal sel_ff : func_7 := (others => '0');
-   signal sel_opcode : opcode :=(others => '0');
+   signal sel_opcode : opcode := (others => '0');
 
   --Outputs
    signal alu_out : bit_32;
@@ -43,63 +42,49 @@ begin
     sel_opcode => sel_opcode
   );
 
-  -- test overflow
   test_proc1 : process is
   begin
-    a <= x"ffffffff";
+    -- test overflow
+    a <= x"00000123";
+    b <= x"ffffffff";
+    sel_f <= F_ADDI;
+    -- sel_ff <= "0000000";
+    sel_opcode <= OP_REG;
+    wait for 20 ns; -- addi t0, t0, 0xfff; old t0 = 0x123; new t0 = 0x122 (subtract 1)
+
+    -- test overflow
+    a <= x"00000001";
+    b <= x"00000000";
+    sel_f <= F_SUB;
+    sel_ff <= "0100000";
+    sel_opcode <= OP_REG;
+    wait for 20 ns;
+    
+    -- test leftshift
+    a <= x"00000001"; -- erwartet dann ...010
     b <= x"00000001";
-    sel_f <= F_ADD;
+    sel_f <= F_SLL;
     sel_ff <= "0000000";
     sel_opcode <= OP_REG;
-    wait for 100 ns;
+    wait for 20 ns;
+
+    -- test store
+    a <= x"00000001"; -- rs1
+    b <= x"10000000"; -- imm_b --> 12bits sign extenden to 31bits
+    sel_f <= F_SW;
+    -- sel_ff <= x"11000000"; -- other sel_ff <- is dat richtig?, ne sw hat kein sel_ff
+    sel_opcode <= OP_STORE; -- alu_out == rs2
+    wait for 20 ns;
+
+    -- test load 
+    a <= x"00000001";
+    b <= x"10000000";
+    sel_f <= F_LW;
+    -- sel_ff <= x"11000000"; --other sel_ff also nicht 01 oder 00 <- is dat richtig?
+    sel_opcode <= OP_LOAD;
+    wait for 20 ns;
+
     wait;
   end process test_proc1;
-  
-  -- test underflow/negatives
-  test_proc2 : process is 
-  begin
-    a <= x"00000000";
-    b <= x"00000001";
-    sel_f <= F_SUB;
-    sel_ff <= "01000000";
-    sel_opcode <= OP_REG;
-    wait for 50 ns;
-    wait;
-  end process test_proc2;
 
-  -- test leftshift
-  test_proc3 : process is
-  begin
-    a <= "00000000000000000000000000000001"; -- erwartet dann ...010
-    -- b <= -- keine value nötig: null
-    sel_f <= F_SLL;
-    sel_ff <= "00000000";
-    sel_opcode <= OP_REG;
-    wait for 25 ns;
-    wait;
-  end process test_proc3;
-
-  -- test store
-  test_proc4 : process is
-    begin
-      a <= x"00000001";
-      b <= x"10000000";
-      sel_f <= F_SW;
-      sel_ff <= x"11000000"; --other sel_ff <- is dat richtig?
-      sel_opcode <= OP_STORE;
-      wait for 6 ns;
-      wait;
-    end process test_proc4;
-
-    -- test load
-    test_proc5 : process is
-    begin
-        a <= x"00000001";
-        b <= x"10000000";
-        sel_f <= F_LW;
-        sel_ff <= x"11000000"; --other sel_ff also nicht 01 oder 00 <- is dat richtig?
-        sel_opcode <= OP_LOAD;
-      wait for 12 ns;
-      wait;
-    end process test_proc5;
 end architecture behave;

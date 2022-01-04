@@ -88,7 +88,7 @@ class Instruction:
     def int2bin(self, num, binLength):
         bits = None
         if int(num) < 0: # denn bsp mit 23 funktioniert es nicht
-            bits = Bits(int=int(num), length=binLength).bin
+            bits = Bits(int=int(num), length=binLength).bin 
         else:
             bits = "{0:0"+ str(binLength) + "b}"
             bits = bits.format(int(num))
@@ -166,12 +166,11 @@ class Instruction:
         elif instr == "ret":
             assCode = self.int2bin(0, 12) + self.get_register("ra") + "000" + self.get_register("zero") + OP_JALR
         elif instr == "call":
-            assCode = self.int2bin(0, 12) + self.get_register("ra") + "000" + self.get_register("zero") + OP_JALR
+            assCode = self.int2bin(0, 12) + self.get_register("ra") + "000" + self.get_register("zero") + OP_JALR # TODO
         elif instr == "mv":
             assCode = self.int2bin(0, 12) + self.get_register(arguments[1]) + "000" + self.get_register(arguments[0]) + OP_IMM 
         else: # Error for unknown codes
             raise Exception(f"unknown operation: {instr}\n")
         
         print(hex(int(assCode, 2)))
-
         return assCode
