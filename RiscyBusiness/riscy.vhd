@@ -66,13 +66,9 @@ architecture behavioral of riscy is
         );
     end component alu_entity;
 
-    --signal to and out of the alu
-    signal alu_out : bit_32;
-    signal val_a : bit_32;
-    signal val_b : bit_32;
-
-
     -- fetch stage signals
+    signal ins_mem : std_logic_vector(31 downto 0); -- instruction fetched form the memory
+
 
 
 
@@ -96,9 +92,9 @@ architecture behavioral of riscy is
     signal imm_signal_JtypeTwo_D : std_logic;
     signal imm_signal_JtypeThree_D : std_logic_vector(9 downto 0);
     signal imm_signal_JtypeFour_D : std_logic;
-    signal ins_mem : std_logic_vector(31 downto 0); -- instruction fetched form the memory
     signal rs1_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     signal rs2_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
+    signal rd_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
 
 
     -- execute stage signals
@@ -132,22 +128,22 @@ architecture behavioral of riscy is
         instruction => ins_mem,  -- instruction fetched form the memory
         alu_sel_f => alu_sel_signal_ff_D,
         alu_sel_ff => alu_sel_signal_ff_D,
-        sel_opcode => sel_opcode_D, -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
-        rd => rd_signal,
-        rs1 => rs1_signal,
-        rs2 => rs2_signal,
-        imm_Itype => imm_signal_Itype,
-        imm_Utype => imm_signal_Utype,
-        imm_Stype => imm_signal_Stype,
-        imm_StypeTwo => imm_signal_StypeTwo,
-        imm_Btype => imm_signal_Btype,
-        imm_BtypeTwo => imm_signal_BtypeTwo,
-        imm_BtypeThree => imm_signal_BtypeThree,
-        imm_BtypeFour => imm_signal_BtypeFour,
-        imm_Jtype => imm_signal_Jtype,
-        imm_JtypeTwo => imm_signal_JtypeTwo,
-        imm_JtypeThree => imm_signal_JtypeThree,
-        imm_JtypeFour => imm_signal_JtypeFour
+        sel_opcode => sel_opcode_signal_D, -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
+        rd => rd_signal_D,
+        rs1 => rs1_signal_D,
+        rs2 => rs2_signal_D,
+        imm_Itype => imm_signal_Itype_D,
+        imm_Utype => imm_signal_Utype_D,
+        imm_Stype => imm_signal_Stype_D,
+        imm_StypeTwo => imm_signal_StypeTwo_D,
+        imm_Btype => imm_signal_Btype_D,
+        imm_BtypeTwo => imm_signal_BtypeTwo_D,
+        imm_BtypeThree => imm_signal_BtypeThree_D,
+        imm_BtypeFour => imm_signal_BtypeFour_D,
+        imm_Jtype => imm_signal_Jtype_D,
+        imm_JtypeTwo => imm_signal_JtypeTwo_D,
+        imm_JtypeThree => imm_signal_JtypeThree_D,
+        imm_JtypeFour => imm_signal_JtypeFour_D
     );
 
     -- 32x32 registerfile
@@ -157,9 +153,9 @@ architecture behavioral of riscy is
         rs1 => rs1_signal,
         rs2 => rs2_signal,
         rd => rd_signal,
-        data_input => wb_output,
-        writeEnable => write_enable_if_id
-        rs1_out => rs1_out_D -- 32 bit output
+        data_input => wb_output, -- 32
+        writeEnable => write_enable_if_id,
+        rs1_out => rs1_out_D, -- 32 bit output
         rs2_out => rs2_out_D -- 32 bit output
     );
 
@@ -185,7 +181,7 @@ architecture behavioral of riscy is
 
     pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D) 
     begin
-        sel_opcode_X <= sel_opcode_D;
+        sel_opcode_X <= sel_opcode_signal_D;
         rs1_out_X <= rs1_out_D;
         rs2_out_X <= rs2_out_D;
     end process ;
