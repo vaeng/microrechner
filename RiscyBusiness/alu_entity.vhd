@@ -27,8 +27,8 @@ begin
                 case(alu_sel_ff) is
                     when "0000000" => -- operations "0000000" class
                         if alu_sel_f = F_ADD then alu_out <=  std_logic_vector(signed(val_a) + signed(val_b)); end if;
-                        if alu_sel_f = F_SLL then alu_out <= std_logic_vector(signed(val_a) sll to_integer(signed(lower_bits))); end if;
-                        if alu_sel_f = F_SRL then  alu_out <= std_logic_vector(signed(val_a) srl to_integer(signed(lower_bits))); end if;
+                        if alu_sel_f = F_SLL then alu_out <= std_logic_vector(signed(val_a) sll to_integer(unsigned(lower_bits))); end if;
+                        if alu_sel_f = F_SRL then  alu_out <= std_logic_vector(signed(val_a) srl to_integer(unsigned(lower_bits))); end if;
                         if alu_sel_f = F_XOR then  alu_out <= val_a xor val_b; end if;
                         if alu_sel_f = F_OR  then alu_out <= val_a or val_b; end if;
                         if alu_sel_f = F_AND then  alu_out <= val_a and val_b; end if;
@@ -46,12 +46,12 @@ begin
                                 alu_out <= x"00000000";
                             end if;
                         end if;
-                        if alu_sel_f = F_SLL then alu_out <= std_logic_vector(signed(val_a) sll to_integer(signed(lower_bits))); end if;
-                        if alu_sel_f = F_SRL then alu_out <= std_logic_vector(signed(val_a) srl to_integer(signed(lower_bits))); end if;
+                        if alu_sel_f = F_SLL then alu_out <= std_logic_vector(signed(val_a) sll to_integer(unsigned(lower_bits))); end if;
+                        if alu_sel_f = F_SRL then alu_out <= std_logic_vector(signed(val_a) srl to_integer(unsigned(lower_bits))); end if;
                         
                     when "0100000" => -- operations "0100000" class
                         if alu_sel_f = F_SUB then alu_out <= std_logic_vector(signed(val_b) - signed(val_a)); end if;
-                        if alu_sel_f = F_SRA then alu_out <= std_logic_vector(signed(val_a) sra to_integer(signed(lower_bits))); end if;
+                        if alu_sel_f = F_SRA then alu_out <= std_logic_vector(signed(val_a) sra to_integer(unsigned(lower_bits))); end if;
                     
                     when others => alu_out <= x"00000000";
                         
@@ -60,11 +60,11 @@ begin
             when OP_IMM => 
                 case( alu_sel_ff ) is
                     when "0000000" =>
-                        if alu_sel_f = F_SLLI then alu_out <= std_logic_vector(signed(val_a) sll to_integer(signed(lower_bits))); end if;
-                        if alu_sel_f = F_SRLI then alu_out <= std_logic_vector(signed(val_a) srl to_integer(signed(lower_bits))); end if;
+                        if alu_sel_f = F_SLLI then alu_out <= std_logic_vector(signed(val_a) sll to_integer(unsigned(lower_bits))); end if;
+                        if alu_sel_f = F_SRLI then alu_out <= std_logic_vector(signed(val_a) srl to_integer(unsigned(lower_bits))); end if;
                 
                     when "0100000" =>
-                        if alu_sel_f = F_SRAI then alu_out <= std_logic_vector(signed(val_a) sra to_integer(signed(lower_bits))); end if;
+                        if alu_sel_f = F_SRAI then alu_out <= std_logic_vector(signed(val_a) sra to_integer(unsigned(lower_bits))); end if;
 
                     when others => 
                         if alu_sel_f = F_ANDI then alu_out <= val_a and val_b; end if;

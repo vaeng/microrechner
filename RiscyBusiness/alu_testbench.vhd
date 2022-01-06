@@ -20,7 +20,7 @@ architecture behave of alu_testbench is
         );
       end component;
 
-    -- inputs
+    -- inputs (verbindende signale)
    signal a : bit_32 := (others => '0');
    signal b : bit_32 := (others => '0');
    signal sel_f : func_3 := (others => '0');
@@ -32,8 +32,8 @@ architecture behave of alu_testbench is
 
 begin
 
-    -- Instantiate the Unit Under Test (UUT)
-   alu: alu_entity PORT MAP (
+    -- Instantiate the Unit Under Test (UUT) [or Device Under Test (DUT)] (die ports sind die Anschlüsse)
+   alu: alu_entity port map (
     val_a => a, 
     val_b => b, 
     alu_sel_f => sel_f,

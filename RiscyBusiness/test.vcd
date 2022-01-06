@@ -1,5 +1,5 @@
 $date
-  Tue Jan  4 14:13:29 2022
+  Tue Jan  4 14:45:56 2022
 $end
 $version
   GHDL v0
@@ -7,6 +7,17 @@ $end
 $timescale
   1 fs
 $end
+$scope module standard $end
+$upscope $end
+$scope module textio $end
+$upscope $end
+$scope module std_logic_1164 $end
+$upscope $end
+$scope module numeric_std $end
+$upscope $end
+$scope module riscy_package $end
+$upscope $end
+$scope module alu_testbench $end
 $var reg 32 ! a[31:0] $end
 $var reg 32 " b[31:0] $end
 $var reg 3 # sel_f[2:0] $end
@@ -20,6 +31,7 @@ $var reg 3 ) alu_sel_f[2:0] $end
 $var reg 7 * alu_sel_ff[6:0] $end
 $var reg 32 + alu_out[31:0] $end
 $var reg 7 , sel_opcode[6:0] $end
+$upscope $end
 $upscope $end
 $enddefinitions $end
 #0

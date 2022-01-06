@@ -1,12 +1,11 @@
 library ieee;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.numeric_std.all;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use ieee.numeric_std.all;
 
 use work.riscy_package.all;
 
 entity riscy is
-    port(reset, clk : in std_logic;
+    port(reset, clk_alternativ : in std_logic;
     read_data_bus : in bit_32; -- bei rising_clock daten holen aus dem RAM in die Register des CPUs
     write_data_bus : out bit_32;
     adress_bus : out bit_32;
@@ -18,7 +17,49 @@ end;
 
 architecture behavioral of riscy is
     
-    -- type registerFile is array(0 to 31) of std_logic_vector(31 downto 0);
+    component register_file32 is port( 
+        clk: in std_logic; -- clock
+        rs1: in std_logic_vector(4 downto 0); -- input
+        rs2: in std_logic_vector(4 downto 0); -- input
+        rd: in std_logic_vector(4 downto 0); -- input
+        data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage or from the mem(e.g. through a lw instrucution)
+        rs1_out: out std_logic_vector(31 downto 0); -- data output
+        rs2_out: out std_logic_vector(31 downto 0); -- data output
+        writeEnable   : in std_logic -- for conroll, writeEnable == 1 write otherwise read or do nothing
+        );
+    end component register_file32;
+
+    
+    component addressdecoder is    
+        port (
+        instruction: in std_logic_vector(31 downto 0);
+        ins_mem : out out std_logic_vector(31 downto 0); -- instruction fetched form the memory
+        alu_sel_f : out out func_3;
+        alu_sel_ff : out func_7;
+        sel_opcode : out opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
+        rd_ : out std_logic_vector(4 downto 0);
+        rs1_ : out std_logic_vector(4 downto 0);
+        rs2_ : out std_logic_vector(4 downto 0);
+    
+        imm__Itype : out std_logic_vector(11 downto 0);
+        imm__Utype : out std_logic_vector(20 downto 0);
+        
+        imm__Stype : out std_logic_vector(5 downto 0);
+        
+        imm__StypeTwo : out std_logic_vector(7 downto 0);
+    
+        imm__Btype : out std_logic;
+        imm__BtypeTwo : out std_logic_vector(3 downto 0);
+        imm__BtypeThree : out std_logic_vector(5 downto 0);
+        imm__BtypeFour : out std_logic;
+    
+        imm__Jtype : out std_logic_vector(7 downto 0);
+        imm__JtypeTwo : out std_logic;
+        imm__JtypeThree : out std_logic_vector(9 downto 0);
+        imm__JtypeFour : out std_logic
+        );
+    end component addressdecoder;
+  
 
     --signal to and out of the alu
     signal alu_out : bit_32;
@@ -27,13 +68,13 @@ architecture behavioral of riscy is
 
 
     --decode signals to the registerfile
-    signal ins_mem : bit_32; -- instruction fetched form the memory
+    signal ins_mem : std_logic_vector(31 downto 0); -- instruction fetched form the memory
     signal alu_sel_f : func_3;
     signal alu_sel_ff : func_7;
     signal sel_opcode : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
-    signal rd_signal : bit_32(4 downto 0);
-    signal r1_signal : bit_32(4 downto 0);
-    signal r2_signal : bit_32(4 downto 0);
+    signal rd_signal : std_logic_vector(4 downto 0);
+    signal rs1_signal : std_logic_vector(4 downto 0);
+    signal rs2_signal : std_logic_vector(4 downto 0);
 
     signal imm_signal_Itype : std_logic_vector(11 downto 0);
     
@@ -52,7 +93,32 @@ architecture behavioral of riscy is
     signal imm_signal_JtypeThree : std_logic_vector(9 downto 0);
     signal imm_signal_JtypeFour : std_logic;
 
+    -- universal clock
+    signal clk: std_logic;
+
+    -- wb stage signals
+    signal wb_output: std_logic_vector(31 downto 0);
+
+    -- control signals (the brain)
+    -- control signals if/id (instruction fetch and decode stage)
+    signal write_enable_if_id: std_logic; -- is dependent of the opcode # todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
+    
     begin
+
+    address_decoder : addressdecoder
+
+
+    -- 32x32 registerfile
+    -- #todo high active für die enable signale nutzen? --> marvin nochmal nachfragen was er hiermit explizit meinte <-- das hast du geschrieben xD
+    register_file: register_file32 port map(
+        clk => clk,
+        rs1 => rs1_signal,
+        rs2 => rs2_signal,
+        rd => rd_signal,
+        data_input => wb_output,
+        writeEnable => write_enable_if_id
+    );
+
 
     -- alu_arithmetic aber man muss val_b und alu_sel_ff unterscheiden da zwei bedeutung. val_b ist sowohl lower 5bit immidiate wert vom I-type
     -- als auch wert vom register rs2. alu_sel_ff ist sowohl func7 als auch imm[11:5] vom imm[11:0] I-type field.
@@ -136,70 +202,6 @@ architecture behavioral of riscy is
         end case;       
              
       end process;
-
-      address_decoder : process(ins_mem) -- instruction register
-      begin
-        if ins_mem(6 downto 0) = OP_REG then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            r2_signal <= ins_mem(24 downto 20);
-            alu_sel_ff<= ins_mem(31 downto 25);
-        elsif ins_mem(6 downto 0) = OP_IMM then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            imm_signal_Itype <= ins_mem(31 downto 20);
-        elsif ins_mem(6 downto 0) = OP_LUI or ins_mem(6 downto 0) = OP_AUIPC then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            imm_signal_Utype <= ins_mem(31 downto 12);
-        elsif ins_mem(6 downto 0) = OP_LOAD then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            imm_signal_Itype <= ins_mem(31 downto 20);
-        elsif ins_mem(6 downto 0) = OP_STORE then
-            sel_opcode <= ins_mem(6 downto 0);
-            imm_signal_Stype <= ins_mem(11 downto 7);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            r2_signal <= ins_mem(24 downto 20);
-            imm_signal_StypeTwo <= ins_mem(31 downto 25);
-        elsif ins_mem(6 downto 0) = OP_BRANCH then
-            sel_opcode <= ins_mem(6 downto 0);
-            imm_signal_Btype <= ins_mem(7);
-            imm_signal_BtypeTwo <= ins_mem(11 downto 8);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            r2_signal <= ins_mem(24 downto 20);
-            imm_signal_BtypeThree <= ins_mem(30 downto 25);
-            imm_signal_BtypeFour <= ins_mem(31);
-        elsif ins_mem(6 downto 0) = OP_JAL then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            imm_signal_Jtype <= ins_mem(19 downto 12);
-            imm_signal_JtypeTwo <= ins_mem(20);
-            imm_signal_JtypeThree <= ins_mem(30 downto 21);
-            imm_signal_JtypeFour <= ins_mem(31);
-        elsif ins_mem(6 downto 0) = OP_JALR then
-            sel_opcode <= ins_mem(6 downto 0);
-            rd_signal <= ins_mem(11 downto 7);
-            alu_sel_f <= ins_mem(14 downto 12);
-            r1_signal <= ins_mem(19 downto 15);
-            imm_signal_Itype <= ins_mem(31 downto 20);
-        end if;
-          
-      end process ; -- address_decoder
-
-
-    -- high active für die enable signale nutzen
-    register_file : process(val_a, val_b) -- val_a, val_b are the outputs
-    begin
-    end process ;
 
     -- high active für die enable signale nutzen
     pipleinestage_IF_ID : process(sel_opcode, rd_signal) -- val_a, val_b are the outputs
