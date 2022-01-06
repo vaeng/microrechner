@@ -1,5 +1,5 @@
 GHDL_CMD = ghdl
-GHDL_FLAGS = --ieee=synopsys --std=08
+GHDL_FLAGS = --std=08
 
 all: compile #clean run
 
