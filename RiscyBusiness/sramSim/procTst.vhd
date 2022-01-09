@@ -42,7 +42,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
 					nWE	=> const1,
 					addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
 					dataIn	=> open,
-					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port
+					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
           addrWd	=> 8,
@@ -61,8 +61,8 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
           clk	=> clk,
 					nRst	=> nRst,
 					iAddr	=> iAddr,
-					iData	=> iDataO,
-					dnWE	=> dnWE,
+					iData	=> iDataO, -- instruction decode; use as signal in cpu
+					dnWE	=> dnWE, -- wirte enable dependent of opcode; its low active; if 0 then write in ram else not
 					dAddr	=> dAddr,
 					dDataI	=> dDataI,
 					dDataO	=> dDataO);
