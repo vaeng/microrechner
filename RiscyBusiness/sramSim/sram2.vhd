@@ -51,8 +51,8 @@ entity sram2 is
 generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
 		dataWd	: integer range 2 to 32	:= 8;	-- #data    bits
 		fileId	: string		:= "sram.dat"); -- filename
-port (		nCS	: in    std_logic;		-- not Chip   Select
-		nWE	: in    std_logic;		-- not Write  Enable
+port (		nCS	: in    std_logic;		-- not Chip Select
+		nWE	: in    std_logic;		-- not Write Enable
 	        addr	: in    std_logic_vector(addrWd-1 downto 0);
 	        dataIn	: in	std_logic_vector(dataWd-1 downto 0);
 	        dataOut	: out	std_logic_vector(dataWd-1 downto 0);
@@ -142,10 +142,10 @@ begin
     ------------------------------------------------------------------------
     if nCS = '0'	then				-- chip select
       if nWE = '0'	then				-- +write cycle
-	sramMem(to_integer(unsigned(addr))) := dataIn;
-	dataOut <= dataIn;
+		sramMem(to_integer(unsigned(addr))) := dataIn;
+		dataOut <= dataIn;
       else						-- +read cycle
-	dataOut <= sramMem(to_integer(unsigned(addr)));
+		dataOut <= sramMem(to_integer(unsigned(addr)));
       end if;	-- nWE = ...
     end if;	-- nCS = '0'
 
