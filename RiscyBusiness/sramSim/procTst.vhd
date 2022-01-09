@@ -42,7 +42,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
 					nWE	=> const1,
 					addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
 					dataIn	=> open,
-					dataOut	=> iDataO,
+					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
           addrWd	=> 8,
