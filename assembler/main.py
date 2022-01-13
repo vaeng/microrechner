@@ -7,12 +7,26 @@ from instruction import Instruction
 
 
 label_position = {}
+last_used_registers = [None, None, None, None]
+
+INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu"]
 
 # hexstring starting with x to binary string of length n
 # example hex2binary("t3", 8) -> "00101000" t3 = x28 lui rd, bin(2)
 def hex2binary(hexString, binLength):
     s = "{0:0" + str(binLength) + "b}"
     return s.format(int(hexString[1:], base=16)) #hexString
+
+def whenHasWrittenToRegisterLast(register):
+    last_used = -1
+
+    if register in last_used_registers and register is not None:
+        last_used = last_used_registers.index(register)
+
+    last_used_registers.pop(0)        
+    last_used_registers.append(register)
+
+    return last_used        
 
 def main():
 
@@ -41,6 +55,29 @@ def main():
                     continue
                 else:
                     inst = Instruction(ram_position, line)
+                    no_op_count = -1
+
+                    index = whenHasWrittenToRegisterLast(inst.write_register)
+
+                    # TODO: Aktuell werden nur Register in die geschrieben wird betrachtet.
+                    # Es muss aber auch bei Registern geprüft werden, wo nur lesend drauf zugegriffen wird.                    
+                    if inst.instruction in INSTRUCTIONS_CAUSING_HAZARDS:
+                        no_op_count = 3
+
+                    if index != -1:
+                        print(line, index)
+                        no_op_count = index
+
+                    # Überprüfen ob die Instruction zu einem Hazard führen könnte.
+                    # Falls ja, füge drei NO_OP Instructions ein.
+                    if no_op_count > 0:
+                        for i in range(no_op_count):
+                            ram_position += 4
+                            noop_inst = Instruction(ram_position, "nop")
+                            # Müssen das hier nochmal aufrufen, damit letzte Register aktuallisiert werden
+                            whenHasWrittenToRegisterLast(None)
+                            instructions.append(noop_inst)
+
                     instructions.append(inst)
                     ram_position += 4
 

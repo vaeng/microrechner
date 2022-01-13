@@ -15,6 +15,8 @@ OP_STORE  = "0100011"
 OP_AUIPC  = "0010111"
 OP_IMM    = "0010011"
 
+WRITE_INSTRUCTIONS = ["addi", "lw", "slti", "sltiu", "lui", "jal", "jalr", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "slli", "slt", "sltu", "xor", "srl", "sra", "or", "and"]
+
 class Instruction:
     def __init__(self, ram_pos, line):
         self.ram_position = ram_pos
@@ -22,13 +24,20 @@ class Instruction:
         self.label = None
         self.address = None
 
-
         instr, *arguments = re.split(',? |\(|\)+', line)
 
         if instr == "bne" or instr == "beq" or instr == "blt" or instr == "bge" or instr == "bltu":
             self.label = arguments[2]
         if instr == "jal" or instr == "jalr":
             self.label = arguments[1]
+
+        self.instruction = instr
+
+        # Wenn die Instruktion in ein Register schreibt, speichern wir uns in welches Register geschrieben wurde
+        if instr in WRITE_INSTRUCTIONS:
+            self.write_register = arguments[0]
+        else:
+            self.write_register = None            
 
     def set_address(self, address):
         self.address = address
@@ -66,7 +75,7 @@ class Instruction:
             "a4": "01111", #
             "a5": "10000", #
             "a6": "10001", #
-            "a7": "10010", # 
+            "a7": "10010", #
             "s2": "10011", # Saved registers
             "s3": "10100", #
             "s4": "10101", #
@@ -75,8 +84,8 @@ class Instruction:
             "s7": "11000", #
             "s8": "11001", #
             "s9": "11010", #
-            "s10":"11011", #
-            "s11": "11100",#
+            "s10": "11011", #
+            "s11": "11100", #
             "t3": "11101", # Temporaries
             "t4": "11110", #
             "t5": "11111", #
@@ -171,6 +180,7 @@ class Instruction:
             assCode = self.int2bin(0, 12) + self.get_register(arguments[1]) + "000" + self.get_register(arguments[0]) + OP_IMM 
         else: # Error for unknown codes
             raise Exception(f"unknown operation: {instr}\n")
-        
+
+
         print(hex(int(assCode, 2)))
         return assCode
