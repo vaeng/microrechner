@@ -1,0 +1,10 @@
+bitstring==3.1.9
+click==8.0.3
+Flask==2.0.2
+gunicorn==20.1.0
+itsdangerous==2.0.1
+Jinja2==3.0.3
+MarkupSafe==2.0.1
+reg==0.12
+repoze.lru==0.7
+Werkzeug==2.0.2
