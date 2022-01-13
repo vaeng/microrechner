@@ -6,8 +6,9 @@
 library ieee;						-- packages:
 use ieee.std_logic_1164.all;				--   std_logic
 use ieee.numeric_std.all;				--   (un)signed
-use work.sramPkg.all;					--   sram2
--- use work.procPkg.all;					--   pipeProc
+use work.sramSim.all;					--   sram2
+use work.riscy.all;					--   pipeProc
+use work.riscy_package.all
 
 -- entity	--------------------------------------------------------------
 ------------------------------------------------------------------------------
@@ -35,39 +36,39 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   -- memories		------------------------------------------------------
   instMemI: sram2	generic map(
           addrWd	=> 8,
-					dataWd	=> 32,
-					fileID	=> "instMem.dat")
+            dataWd	=> 32,
+            fileID	=> "instMem.dat")
 			port map    (	
           nCS	=> const0,
-					nWE	=> const1,
-					addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
-					dataIn	=> open,
-					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
-					fileIO	=> iCtrl);
+            nWE	=> const1,
+            addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
+            dataIn	=> open,
+            dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
+            fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
           addrWd	=> 8,
 					dataWd	=> 32,
 					fileID	=> "dataMem.dat")
 			port map    (	
           nCS	=> const0,
-					nWE	=> dnWE,
-					addr	=> dAddr, -- 256x32 fuer die Befehle (dataAddress)
-					dataIn	=> dDataI,
-					dataOut	=> dDataO, -- dataMem --> CPU.Registerfile, lw
-					fileIO	=> dCtrl);
+            nWE	=> dnWE,
+            addr	=> dAddr, -- 256x32 fuer die Befehle (dataAddress)
+            dataIn	=> dDataI,
+            dataOut	=> dDataO,
+            fileIO	=> dCtrl);
 
   -- pipe processor	(hier kommt unser risc-v prozessor hin "riscy.vhd" ------------------------------------------------------
   pipeProcI: pipeProc	port map(
           clk	=> clk,
-					nRst	=> nRst,
-					iAddr	=> iAddr, -- CPU.PC --> instMEMI
-					iData	=> iDataO, -- instruction decode; use as signal in cpu; instMemI --> cpu.Decoder
-					dnWE	=> dnWE, -- wirte enable dependent of opcode; its low active; if 0 then write in ram else not; CPU.Decoder(Opcode) --> dataMEM
-					dAddr	=> dAddr, -- addresse für den RAM, CPU.ALU --> dataMEM eg for sw
-					dDataI	=> dDataI, -- CPU.ALU --> dataMEM
-					dDataO	=> dDataO); --> dataMem --> CPU.Registerfile, lw
+        nRst	=> nRst,
+        iAddr	=> iAddr, -- CPU.PC --> instMEMI
+        iData	=> iDataO, -- instruction decode; use as signal in cpu; instMemI --> cpu.Decoder
+        dnWE	=> dnWE, -- wirte enable dependent of opcode; its low active; if 0 then write in ram else not; CPU.Decoder(Opcode) --> dataMEM
+        dAddr	=> dAddr, -- addresse für den RAM, CPU.ALU --> dataMEM eg for sw
+        dDataI	=> dDataI, -- CPU.ALU --> dataMEM
+        dDataO	=> dDataO); --> dataMem --> CPU.Registerfile, lw
 
-  -- stimuli		------------------------------------------------------
+  -- stimuli ------------------------------------------------------
   stiP: process is
   begin
     clk		<= '0';

@@ -17,6 +17,7 @@ generic(clkPeriod	: time		:= 20 ns;	-- clock period
 end entity procTst;
 
 
+
 -- architecture (Harvard Architektur)	--------------------------------------------------------------
 ------------------------------------------------------------------------------
 architecture testbench of procTst is
@@ -28,44 +29,41 @@ architecture testbench of procTst is
   signal dDataO, dDataI	: std_logic_vector(31 downto 0); --dData0 for the ram to register (for procedures)
   signal iCtrl,  dCtrl	: fileIOty;
 
+
+
 begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt wird!!!!
   const0 <= '0';
   const1 <= '1';
 
-  -- memories		------------------------------------------------------
+  -- memories ------------------------------------------------------
   instMemI: sram2	generic map(
           addrWd	=> 8,
 					dataWd	=> 32,
 					fileID	=> "instMem.dat")
-			port map    (	
+			port map
+      (	
           nCS	=> const0,
 					nWE	=> const1,
 					addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
 					dataIn	=> open,
 					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
-					fileIO	=> iCtrl);
-  dataMemI: sram2	generic map (	
-          addrWd	=> 8,
-					dataWd	=> 32,
-					fileID	=> "dataMem.dat")
-			port map    (	
-          nCS	=> const0,
-					nWE	=> dnWE,
-					addr	=> dAddr, -- 256x32 fuer die Befehle (dataAddress)
-					dataIn	=> dDataI,
-					dataOut	=> dDataO, -- dataMem --> CPU.Registerfile, lw
-					fileIO	=> dCtrl);
+					fileIO	=> iCtrl
+      );
 
-  -- pipe processor	(hier kommt unser risc-v prozessor hin "riscy.vhd" ------------------------------------------------------
-  pipeProcI: pipeProc	port map(
-          clk	=> clk,
-					nRst	=> nRst,
-					iAddr	=> iAddr, -- CPU.PC --> instMEMI
-					iData	=> iDataO, -- instruction decode; use as signal in cpu; instMemI --> cpu.Decoder
-					dnWE	=> dnWE, -- wirte enable dependent of opcode; its low active; if 0 then write in ram else not; CPU.Decoder(Opcode) --> dataMEM
-					dAddr	=> dAddr, -- addresse für den RAM, CPU.ALU --> dataMEM eg for sw
-					dDataI	=> dDataI, -- CPU.ALU --> dataMEM
-					dDataO	=> dDataO); --> dataMem --> CPU.Registerfile, lw
+    -- fetch ------------------------------------------------------
+    registerI: register_file32
+        port map(
+            clk => clk, -- clock
+            rs1 =>  ,-- input
+            rs2 =>  , -- input
+            rd =>  , -- input
+            data_input => , -- data input from the wb stage (ALUor from the mem(e.g. through a lw instrucution)
+            rs1_out =>  , -- data output
+            rs2_out =>  , -- data output
+            writeEnable =>  -- for conroll, writeEnable == 1 write otherwise read or do nothing
+        );
+
+        );
 
   -- stimuli		------------------------------------------------------
   stiP: process is
@@ -76,9 +74,8 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
     dCtrl	<= load,  none after 5 ns;
     wait for clkPeriod/2;
     for n in 1 to clkCycles loop
-	    clk <= '0', '1' after clkPeriod/2;
-	    wait for clkPeriod;
-    
+	clk <= '0', '1' after clkPeriod/2;
+	wait for clkPeriod;
     end loop;
     wait;
   end process stiP;
