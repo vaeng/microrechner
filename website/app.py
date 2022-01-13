@@ -1,6 +1,15 @@
 # app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+from assembler.instruction import Instruction
+from helpers import instructions2bytecode
+
+import argparse  # https://docs.python.org/3/library/argparse.html
+import reg  # https://docs.python.org/3/library/re.html
+import re
+
+
 app = Flask(__name__)
+
 
 @app.route('/getmsg/', methods=['GET'])
 def respond():
@@ -25,6 +34,7 @@ def respond():
     # Return the response in json format
     return jsonify(response)
 
+
 @app.route('/post/', methods=['POST'])
 def post_something():
     param = request.form.get('name')
@@ -34,7 +44,7 @@ def post_something():
         return jsonify({
             "Message": f"Welcome {name} to our awesome platform!!",
             # Add this option to distinct the POST request
-            "METHOD" : "POST"
+            "METHOD": "POST"
         })
     else:
         return jsonify({
@@ -45,6 +55,21 @@ def post_something():
 @app.route('/')
 def index():
     return "<h1>Welcome to our server !!</h1>"
+
+
+@app.route('/demo', methods=['GET', 'POST'])
+def empty_form():
+    instructions = request.form.get('instructions')
+    if instructions:
+        try:
+            bytecode = instructions2bytecode(instructions)
+        except Exception as e:
+            bytecode = ["error " + str(e)]
+    else:
+        instructions = ""
+        bytecode = ""
+    return render_template("demo.html", instructions=instructions, bytecode=bytecode)
+
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
