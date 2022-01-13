@@ -33,7 +33,7 @@ begin
         else
             val <= '0';
         end if;
-    end process ; -- brachner
+    end process ; -- brancher
     branch_out <= val;
 
 end arch ; -- arch
