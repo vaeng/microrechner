@@ -211,6 +211,7 @@ architecture behavioral of riscy is
             alu_out_M <= alu_out_X;
             dnWE <= nWE_X; -- out to the DataMEM (external) dnWE is "out" signal
             rd_signal_M <= rd_signal_X;
+        end if;
     end process;
 
     pipleinestage_MEM_WB : process(dDataO, rd_signal_M, clk) 
