@@ -24,7 +24,7 @@ begin
         
         if rising_edge(clk) then
             if nRSt = '1' then
-                current_pc <= x"00"; -- rest signal "low active"
+                current_pc <= x"00"; -- reset signal "low active"
             elsif mux_control_target = '1' then
                 current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input
             else 
