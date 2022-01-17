@@ -23,10 +23,37 @@ architecture testbench of procTst is
   signal clk, nRst	: std_logic;
   signal const0, const1	: std_logic;
   signal dnWE		: std_logic;
-  signal iAddr,  dAddr	: std_logic_vector( 7 downto 0);
+  signal iAddr,  dAddr	: std_logic_vector(31 downto 0);
   signal iDataO		: std_logic_vector(31 downto 0);
-  signal dDataO, dDataI	: std_logic_vector(31 downto 0); --dData0 for the ram to register (for procedures)
+  signal dDataO, dDataI	: std_logic_vector(31 downto 0); -- dData0 for the RAM to register (for processes)
   signal iCtrl,  dCtrl	: fileIOty;
+
+  component sram2 is
+    generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
+        dataWd	: integer range 2 to 32	:= 8;	-- #data    bits
+        fileId	: string		:= "sram.dat"); -- filename
+    port (		nCS	: in    std_logic;		-- not Chip Select
+        nWE	: in    std_logic;		-- not Write Enable
+              addr	: in    std_logic_vector(addrWd-1 downto 0);
+              dataIn	: in	std_logic_vector(dataWd-1 downto 0);
+              dataOut	: out	std_logic_vector(dataWd-1 downto 0);
+              fileIO	: in	fileIOty	:= none);
+    end component sram2;
+
+    component riscy is
+      port(
+          clk: in std_logic;
+          nRst: in std_logic;
+          iAddr: out std_logic_vector(31 downto 0); -- CPU.PC --> INSMEM (Verbinden mit "pc_unit")
+          iData: in std_logic_vector(31 downto 0); -- instruction decode; use as signal in cpu
+          dnWE: out std_logic; -- write enable dependent of opcode(determined in the addressdecoder); its low active; if 0 then write in ram else not for dataMEM
+          dAddr: out std_logic_vector(31 downto 0); -- to DataMEM (Verbinden mit dem externen Speicher)
+          dDataI: out std_logic_vector(31 downto 0); -- ausgang zum speichern in DataMEM
+          dDataO: in std_logic_vector(31 downto 0) -- from WB stage
+      ); 
+  end component riscy;
+
+  signal random : std_logic_vector(31 downto 0) := "00000000000000000000000010110011";
 
 begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt wird!!!!
   const0 <= '0';
@@ -34,30 +61,30 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
 
   -- memories		------------------------------------------------------
   instMemI: sram2	generic map(
-          addrWd	=> 8,
+          addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "instMem.dat")
+					fileID	=> "/Users/KerimErekmen/Desktop/Präsentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/test.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,
-					addr	=> iAddr, -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
+					addr	=> iAddr(7 downto 0), -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
 					dataIn	=> open,
 					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
-          addrWd	=> 8,
+          addrWd	=> 8, -- vielleicht 32bit, aber 2**32 zellen zu viel?
 					dataWd	=> 32,
 					fileID	=> "dataMem.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> dnWE,
-					addr	=> dAddr, -- 256x32 fuer die Befehle (dataAddress)
+					addr	=> dAddr(7 downto 0), -- 256x32 fuer die Befehle (dataAddress)
 					dataIn	=> dDataI,
 					dataOut	=> dDataO, -- dataMem --> CPU.Registerfile, lw
 					fileIO	=> dCtrl);
 
   -- pipe processor	(hier kommt unser risc-v prozessor hin "riscy.vhd" ------------------------------------------------------
-  pipeProcI: pipeProc	port map(
+  pipeProcI: riscy	port map(
           clk	=> clk,
 					nRst	=> nRst,
 					iAddr	=> iAddr, -- CPU.PC --> instMEMI

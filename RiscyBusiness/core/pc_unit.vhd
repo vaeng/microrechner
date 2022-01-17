@@ -8,9 +8,9 @@ use work.riscy_package.all;
 entity pc_unit is
   port (
       clk : in std_logic;
-      I_Addr : in std_logic_vector(7 downto 0); -- WB oder PC + 4 consider MUX from
+      I_Addr : in std_logic_vector(31 downto 0); -- WB oder PC + 4 consider MUX from
       nRst : in std_logic;
-      O_Addr : out std_logic_vector(7 downto 0); -- InsMEM
+      O_Addr : out std_logic_vector(31 downto 0); -- InsMEM
       mux_control_target : in std_logic
   ) ;
 end pc_unit;
@@ -21,14 +21,13 @@ begin
     
     process(clk)
     begin
-        
         if rising_edge(clk) then
-            if nRSt = '1' then
+            if nRSt = '0' then
                 current_pc <= x"00"; -- reset signal "low active"
             elsif mux_control_target = '1' then
-                current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input
+                current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input; WB or from not integer pc
             else 
-                current_pc <= std_logic_vector(unsigned(current_pc) + 4); -- increment
+                current_pc <= std_logic_vector(unsigned(current_pc) + 4); -- increment (also should work for lw)
             end if;
         end if;
         

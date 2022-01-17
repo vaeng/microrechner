@@ -9,9 +9,8 @@ entity addressdecoder is
 
   port (
     instruction: in std_logic_vector(31 downto 0);  -- instruction fetched form the memory
-    
-    alu_sel_f : out func_3;
-    alu_sel_ff : out func_7;
+    alu_sel_f : out std_logic_vector(2 downto 0);
+    alu_sel_ff : out std_logic_vector(6 downto 0);
     sel_opcode : out opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
     rd : out std_logic_vector(4 downto 0);
     rs1 : out std_logic_vector(4 downto 0);
@@ -34,7 +33,7 @@ entity addressdecoder is
     imm_JtypeThree : out std_logic_vector(9 downto 0);
     imm_JtypeFour : out std_logic;
 
-    I_nWE : out std_logic -- not write Enable
+    I_nWE : out std_logic -- not write Enable; control signal also for jmp, beq, .... 
   );
 
 end addressdecoder;
@@ -45,33 +44,33 @@ begin
 
     address_decoder : process(instruction) -- instruction register
     begin
-        if instruction(6 downto 0) = OP_REG then
+        if instruction(6 downto 0) = OP_REG then -- lesen des bytecodes (bits) von rechts nach links
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             rs2 <= instruction(24 downto 20);
             alu_sel_ff <= instruction(31 downto 25);
-            I_wen <= 1;
+            I_nWE <= '0';
         elsif instruction(6 downto 0) = OP_IMM then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_wen <= 1;
+            I_nWE <= '0';
         elsif instruction(6 downto 0) = OP_LUI or instruction(6 downto 0) = OP_AUIPC then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             imm_Utype <= instruction(31 downto 12);
-            I_wen <= 1;
+            I_nWE <= '0';
         elsif instruction(6 downto 0) = OP_LOAD then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_wen <= 1;
+            I_nWE <= '0';
         elsif instruction(6 downto 0) = OP_STORE then
             sel_opcode <= instruction(6 downto 0);
             imm_Stype <= instruction(11 downto 7);
@@ -95,14 +94,14 @@ begin
             imm_JtypeTwo <= instruction(20);
             imm_JtypeThree <= instruction(30 downto 21);
             imm_JtypeFour <= instruction(31);
-            I_wen <= 1;
+            I_nWE <= '0';
         elsif instruction(6 downto 0) = OP_JALR then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_wen <= 1;
+            I_nWE <= '0';
         end if;
     end process ; -- address_decoder
 

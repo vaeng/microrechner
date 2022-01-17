@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.ALL;
 use ieee.numeric_std.all;
 
-use work.riscy_package.all;
-
 entity register_file32 is port( 
     I_clk: in std_logic; -- clock
     I_rs1: in std_logic_vector(4 downto 0); -- input
@@ -18,26 +16,32 @@ end register_file32;
 
 architecture behavioral of register_file32 is
     type registerFile is array(31 downto 0) of std_logic_vector(31 downto 0); -- somit 32x32 Registerbank
-    signal registers : registerFile := (others => x"00000000");
+    signal registers : registerFile := (others => x"00000001");
+    signal out_a : std_logic_vector(31 downto 0);
+    signal out_b : std_logic_vector(31 downto 0);
   begin
 
     regFile: process (I_clk) is
     begin
-      if rising_edge(I_clk) then
-        -- Read A and B before bypass
-        O_rs1_out <= registers(to_integer(unsigned(I_rs1)));
-        O_rs2_out <= registers(to_integer(unsigned(I_rs2)));
-        
+      if rising_edge(I_clk) then        
         -- Write and bypass
         if I_nWE = '0' then
-          I_registers(to_integer(unsigned(I_rd))) <= I_data_input;  -- Write
+          registers(to_integer(unsigned(I_rd))) <= I_data_input;  -- Write
           -- if rs1 = rd then  -- Bypass for read rs2
           --   rs1_out <= data_input;
           -- end if;
           -- if rs1 = rd then  -- Bypass for read rs1
           --   rs2_out <= data_input;
           -- end if;
+        else -- wir wollen nur dann lesen, wenn nWE == 1 (high active) (vorher war sogar NUR abhängig von clk, jetzt aber auch von nWE)
+          -- Read A and B before bypass
+          out_a <= registers(to_integer(unsigned(I_rs1)));
+          out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
         end if;
       end if;
     end process;
+
+    O_rs1_out <= out_a;
+    O_rs2_out <= out_b;
+
   end behavioral;

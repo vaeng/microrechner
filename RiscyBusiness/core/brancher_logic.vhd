@@ -19,7 +19,7 @@ begin
     brancher : process(rs1, rs2)
     begin
         if signed(rs1) = signed(rs2) then -- beq
-        	val <= '1'; -- if 1 := branch else not
+        	val <= '1'; -- if rs1==rs2 then branch else not
         elsif signed(rs1) >= signed(rs2) then -- bge
         	val <= '1';
         elsif unsigned(rs1) >= unsigned(rs2) then -- bgeu
@@ -34,6 +34,6 @@ begin
             val <= '0';
         end if;
     end process ; -- brancher
-    branch_out <= val;
 
+    branch_out <= val;
 end arch ; -- arch

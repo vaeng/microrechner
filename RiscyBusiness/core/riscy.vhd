@@ -4,14 +4,15 @@ use ieee.numeric_std.all;
 
 use work.riscy_package.all;
 
+-- Consider also that each piplinestage acts also as an CONTROLLER like the ADDRESSDECODER which give further import control signals
 entity riscy is
     port(
         clk: in std_logic;
         nRst: in std_logic;
-        iAddr: out std_logic_vector(7 downto 0); -- CPU.PC --> INSMEM (Verbinden mit "pc_unit")
+        iAddr: out std_logic_vector(31 downto 0); -- CPU.PC --> INSMEM (Verbinden mit "pc_unit")
         iData: in std_logic_vector(31 downto 0); -- instruction decode; use as signal in cpu
         dnWE: out std_logic; -- write enable dependent of opcode(determined in the addressdecoder); its low active; if 0 then write in ram else not for dataMEM
-        dAddr: out std_logic_vector(7 downto 0); -- to DataMEM (Verbinden mit dem externen Speicher)
+        dAddr: out std_logic_vector(31 downto 0); -- to DataMEM (Verbinden mit dem externen Speicher)
         dDataI: out std_logic_vector(31 downto 0); -- ausgang zum speichern in DataMEM
         dDataO: in std_logic_vector(31 downto 0) -- from WB stage
     ); 
@@ -22,14 +23,14 @@ end;
 architecture behavioral of riscy is
     
     component register_file32 is port( 
-        clk: in std_logic; -- clock
-        rs1: in std_logic_vector(4 downto 0); -- input
-        rs2: in std_logic_vector(4 downto 0); -- input
-        rd: in std_logic_vector(4 downto 0); -- input
-        data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage or from the mem(e.g. through a lw instrucution)
-        rs1_out: out std_logic_vector(31 downto 0); -- data output
-        rs2_out: out std_logic_vector(31 downto 0); -- data output
-        writeEnable   : in std_logic -- for conroll, writeEnable == 1 write otherwise read or do nothing
+        I_clk: in std_logic; -- clock
+        I_rs1: in std_logic_vector(4 downto 0); -- input
+        I_rs2: in std_logic_vector(4 downto 0); -- input
+        I_rd: in std_logic_vector(4 downto 0); -- input
+        I_data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage (ALUor from the mem(e.g. through a lw instrucution)
+        O_rs1_out: out std_logic_vector(31 downto 0); -- data output
+        O_rs2_out: out std_logic_vector(31 downto 0); -- data output
+        I_nWE   : in std_logic -- for conroll, writeEnable == 0 write otherwise read or do nothing
         );
     end component register_file32;
 
@@ -37,8 +38,8 @@ architecture behavioral of riscy is
     component addressdecoder is
         port (
           instruction: in std_logic_vector(31 downto 0);  -- instruction fetched form the memory
-          alu_sel_f : out func_3;
-          alu_sel_ff : out func_7;
+          alu_sel_f : out std_logic_vector(2 downto 0);
+          alu_sel_ff : out std_logic_vector(6 downto 0);
           sel_opcode : out opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
           rd : out std_logic_vector(4 downto 0);
           rs1 : out std_logic_vector(4 downto 0);
@@ -74,17 +75,25 @@ architecture behavioral of riscy is
     component pc_unit is
         port(
             clk : in std_logic;
-            I_Addr : in std_logic_vector(7 downto 0); -- WB oder PC + 4 consider MUX from 
+            I_Addr : in std_logic_vector(31 downto 0); -- WB oder PC + 4 consider MUX from 
             nRst : in std_logic;
-            O_Addr : out std_logic_vector(7 downto 0); -- CPU.PC --> INSMEM
+            O_Addr : out std_logic_vector(31 downto 0); -- CPU.PC --> INSMEM
             mux_control_target : in std_logic
         );
-      end component pc_unit;
+    end component pc_unit;
+
+    component brancher_logic is
+        port (
+          rs1: in std_logic_vector(31 downto 0);
+          rs2: in std_logic_vector(31 downto 0);
+          branch_out: out std_logic
+          );
+    end component brancher_logic;
 
     -- decode stage signals
     -- signals to the registerfile and from the memory
-    signal alu_sel_signal_f_D : func_3;
-    signal alu_sel_signal_ff_D : func_7;
+    signal alu_sel_signal_f_D : std_logic_vector(2 downto 0);
+    signal alu_sel_signal_ff_D : std_logic_vector(6 downto 0);
     signal sel_opcode_signal_D : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
     signal rd_signal_D : std_logic_vector(4 downto 0);
     signal rs1_signal_D : std_logic_vector(4 downto 0);
@@ -106,6 +115,10 @@ architecture behavioral of riscy is
     signal rd_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     -- from fetch stage signals
     signal ins_mem_D : std_logic_vector(31 downto 0); -- instruction fetched form the memory
+    signal O_Addr_D : std_logic_vector(31 downto 0); -- from PC.mux
+    signal O_Addr_D2 : std_logic_vector(31 downto 0); -- to PC.mux, we have to downcast 32 bits to 8 bits because the address space is 2**8
+    signal branch_out : std_logic; -- the control signal for the mux
+    signal O_Addr_F : std_logic_vector(31 downto 0);
 
 
     -- execute stage signals
@@ -125,7 +138,7 @@ architecture behavioral of riscy is
     signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
 
     -- wb stage signals
-    signal output_WB: std_logic_vector(31 downto 0);
+    signal Data_output_WB: std_logic_vector(31 downto 0);
     signal rd_signal_WB : std_logic_vector(4 downto 0);
 
     -- control signals (the brain)
@@ -133,12 +146,29 @@ architecture behavioral of riscy is
     signal nWE_D: std_logic; -- is dependent of the opcode #Todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
     signal nWE_X: std_logic;
 
+
     begin
-        
+    
+
+    PC : pc_unit port map(
+        clk => clk,
+        I_Addr => O_Addr_D2, -- + from ALU_ADDRESSER or PC + 4 consider MUX from 
+        nRst => nRst,
+        O_Addr => O_Addr_F, -- CPU.PC --> INSMEM
+        mux_control_target => branch_out
+    );
+
+    -- controller for the brancher
+    brancher_brain: brancher_logic port map(
+        rs1 => rs1_out_D,
+        rs2 => rs2_out_D,
+        branch_out => branch_out
+    );
+
     -- Instruction decoder before the Memory(ROM, where the bytecode is)
     ADDRESS_DECODER : addressdecoder port map(
         instruction => ins_mem_D,  -- instruction fetched form the memory
-        alu_sel_f => alu_sel_signal_ff_D,
+        alu_sel_f => alu_sel_signal_f_D,
         alu_sel_ff => alu_sel_signal_ff_D,
         sel_opcode => sel_opcode_signal_D, -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
         rd => rd_signal_D,
@@ -163,10 +193,10 @@ architecture behavioral of riscy is
     -- #todo high active für die enable signale nutzen? --> marvin nochmal nachfragen was er hiermit explizit meinte <-- das hast du geschrieben xD
     REGISTER_FILE: register_file32 port map(
         I_clk => clk,
-        I_rs1 => rs1_signal,
-        I_rs2 => rs2_signal,
-        I_rd => rd_signal,
-        I_data_input => dDataO, -- 32 bit from DATAMEM --> Cpu.Register
+        I_rs1 => rs1_signal_D,
+        I_rs2 => rs2_signal_D,
+        I_rd => rd_signal_WB,
+        I_data_input => Data_output_WB, -- 32 bit from DATAMEM --> Cpu.Register
         O_rs1_out => rs1_out_D, -- 32 bit output
         O_rs2_out => rs2_out_D, -- 32 bit output
         I_nWE => nWE_D
@@ -176,49 +206,72 @@ architecture behavioral of riscy is
     -- alu_arithmetic aber man muss val_b und alu_sel_ff unterscheiden da zwei bedeutung. val_b ist sowohl lower 5bit immidiate wert vom I-type
     -- als auch wert vom register rs2. alu_sel_ff ist sowohl func7 als auch imm[11:5] vom imm[11:0] I-type field.
     -- alu_sel_f, alu_sel_ff steuersignale
-    ALU: alu_entity port map(
+    ALU_INTEGER: alu_entity port map(
         val_a => rs1_out_X,
         val_b => rs2_out_X,
         alu_sel_f => alu_sel_signal_f_X,
-        alu_sel_ff => alu_sel_ff_signal_X,
+        alu_sel_ff => alu_sel_signal_ff_X,
         alu_out => alu_out_X,
         sel_opcode => sel_opcode_signal_X
     );
 
+    ALU_ADDRESSER: alu_entity port map(
+        val_a => O_Addr_D, -- #TODO output from extender unit
+        val_b => O_Addr_D,
+        alu_sel_f => alu_sel_signal_f_D, -- dont care
+        alu_sel_ff => alu_sel_signal_ff_D, -- dont care
+        alu_out => O_Addr_D2, -- to PC.MUX
+        sel_opcode => sel_opcode_signal_D
+    );
+
     
     -- high active für die enable signale nutzen
-    pipleinestage_IF_ID : process(iData, clk) 
+    pipleinestage_IF_ID : process(iData, O_Addr_F, clk) 
     begin
         if rising_edge(clk) then
             ins_mem_D <= iData; -- 32bit opcode
+            O_Addr_D <= O_Addr_F;
+            iAddr <= O_Addr_F;
         end if;
     end process ;
 
-    pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, nWE_D, rd_signal_D, clk) 
+    pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, nWE_D, rd_signal_D, alu_sel_signal_ff_D, alu_sel_signal_f_D, clk) 
     begin
         if rising_edge(clk) then
             sel_opcode_signal_X <= sel_opcode_signal_D;
             rs1_out_X <= rs1_out_D;
             rs2_out_X <= rs2_out_D;
             rd_signal_X <= rd_signal_D;
+            alu_sel_signal_ff_X <= alu_sel_signal_ff_D;
+            alu_sel_signal_f_X <= alu_sel_signal_f_D;
+            nWE_X <= nWE_D;
         end if;
     end process ;
 
-    pipleinestage_EX_MEM : process(sel_opcode_signal_X, alu_out_X, nWE_X, rd_signal_X, clk) 
+    pipleinestage_EX_MEM : process(sel_opcode_signal_X, alu_out_X, nWE_X, rd_signal_X, rs2_out_X, clk) 
     begin
         if rising_edge(clk) then
             sel_opcode_signal_M <= sel_opcode_signal_X;
-            alu_out_M <= alu_out_X;
+            dAddr <= alu_out_X;
+            dDataI <= rs2_out_X;
             dnWE <= nWE_X; -- out to the DataMEM (external) dnWE is "out" signal
             rd_signal_M <= rd_signal_X;
+            alu_out_M <= alu_out_X;
         end if;
     end process;
 
-    pipleinestage_MEM_WB : process(dDataO, rd_signal_M, clk) 
+    pipleinestage_MEM_WB : process(sel_opcode_signal_M, alu_out_M, rd_signal_M, dDataO, clk) 
     begin
         if rising_edge(clk) then
-            output_WB <= dDataO;
-            rd_signal_WB <= rd_signal_M;
+            
+            if sel_opcode_signal_M = OP_LOAD then
+                Data_output_WB <= dDataO; -- from DataMEM
+            else
+                Data_output_WB <= alu_out_M;
+            end if;
+
+            rd_signal_WB <= rd_signal_M; -- rd vom bytecode
         end if;
+    end process;
 
 end;
