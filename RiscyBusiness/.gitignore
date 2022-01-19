@@ -1,3 +1,4 @@
 .*.swp
 *.cf
 work
+*.DS_Store

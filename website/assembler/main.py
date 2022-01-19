@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import argparse # https://docs.python.org/3/library/argparse.html
-import reg # https://docs.python.org/3/library/re.html
+import argparse  # https://docs.python.org/3/library/argparse.html
+import reg  # https://docs.python.org/3/library/re.html
 import re
 from instruction import Instruction
 
@@ -9,13 +9,17 @@ from instruction import Instruction
 label_position = {}
 last_used_registers = [None, None, None, None]
 
-INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu"]
+INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr",
+                                "beq", "bne", "blt", "bge", "bltu", "bgeu"]
 
 # hexstring starting with x to binary string of length n
 # example hex2binary("t3", 8) -> "00101000" t3 = x28 lui rd, bin(2)
+
+
 def hex2binary(hexString, binLength):
     s = "{0:0" + str(binLength) + "b}"
-    return s.format(int(hexString[1:], base=16)) #hexString
+    return s.format(int(hexString[1:], base=16))  # hexString
+
 
 def whenHasWrittenToRegisterLast(register):
     last_used = -1
@@ -23,29 +27,31 @@ def whenHasWrittenToRegisterLast(register):
     if register in last_used_registers and register is not None:
         last_used = last_used_registers.index(register)
 
-    last_used_registers.pop(0)        
+    last_used_registers.pop(0)
     last_used_registers.append(register)
 
-    return last_used        
+    return last_used
+
 
 def main():
 
     parser = argparse.ArgumentParser(description='Assembles to byte code.')
-    parser.add_argument('input_file', type=str, help='Path to the file that will be assembled.')
-    parser.add_argument('output_file', type=str, help='Name of the file to output the bytecode to.')
+    parser.add_argument('input_file', type=str,
+                        help='Path to the file that will be assembled.')
+    parser.add_argument('output_file', type=str,
+                        help='Name of the file to output the bytecode to.')
 
     args = parser.parse_args()
     outputlines = []
-    instructions = [] # store each instruction memory
-    ram_position = 0 # for the pc
-
+    instructions = []  # store each instruction memory
+    ram_position = 0  # for the pc
 
     try:
         with open(args.input_file, "r") as file_object:
             print('Assembling', args.input_file)
             for line in file_object.readlines():
                 assCode = ""
-               
+
                 # print(line, type(line))
                 line = line.strip()
                 if ":" in line:
@@ -60,7 +66,7 @@ def main():
                     index = whenHasWrittenToRegisterLast(inst.write_register)
 
                     # TODO: Aktuell werden nur Register in die geschrieben wird betrachtet.
-                    # Es muss aber auch bei Registern geprüft werden, wo nur lesend drauf zugegriffen wird.                    
+                    # Es muss aber auch bei Registern geprüft werden, wo nur lesend drauf zugegriffen wird.
                     if inst.instruction in INSTRUCTIONS_CAUSING_HAZARDS:
                         no_op_count = 3
 
@@ -84,15 +90,14 @@ def main():
     except FileNotFoundError:
         print(args.input_file, 'could not be found.')
 
-
-    # replace labels with adresses 
+    # replace labels with adresses
     for instruction in instructions:
         label = instruction.label
         if label is not None:
             instruction.set_address(label_position[label])
             print(instruction.address)
-        outputlines.append("{:20s} {:32s}\n".format(str(hex(instruction.ram_position)), instruction.get_byte_code())) 
-
+        outputlines.append("{:20s} {:32s}\n".format(
+            str(hex(instruction.ram_position)), instruction.get_byte_code()))
 
     # write it
     try:
@@ -101,9 +106,6 @@ def main():
                 f.writelines(line)
     except FileNotFoundError:
         print(args.output_file, 'could not be found.')
-
-
-
 
 
 if __name__ == "__main__":

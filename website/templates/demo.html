@@ -6,28 +6,66 @@
         <div class="form-group">
             <label for="instructions">Instructions</label>
             <textarea class="form-control" id="instructions" name="instructions" rows="5"
-                placeholder="{{instructions}}"></textarea>
+                placeholder="Fill with Code">{{instructions}}</textarea>
         </div>
-        <button type="submit" class="btn btn-secondary">Convert</button>
+        <button type="submit" name="convert" class="btn btn-secondary">Convert</button>
+        <br />
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">ROM address</th>
+                    <th scope="col">Instruction</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for addr, instr in bytecode.items() %}
+                <tr>
+                    <th scope="row">{{addr}}</th>
+                    <td>{{instr}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if bytecode != "" %}
+        <button type="submit" name="run" class="btn btn-secondary">Run Code</button>
+        {% endif %}
+
+        {% if reg_and_ram %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Register</th>
+                    <th scope="col">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg, val in reg_and_ram["register"].items() %}
+                <tr>
+                    <th scope="row">{{reg}}</th>
+                    <td>{{val}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Ram address</th>
+                    <th scope="col">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg, val in reg_and_ram["ram"].items() %}
+                <tr>
+                    <th scope="row">{{reg}}</th>
+                    <td>{{val}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
 
     </form>
-</div>
-<div class="container">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">ROM address</th>
-                <th scope="col">Instruction</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for line in bytecode %}
-            <tr>
-                <th scope="row">{{line.split()[0]}}</th>
-                <td>{{line.split(" ", 1)[1]}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 {% endblock %}
