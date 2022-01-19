@@ -267,9 +267,7 @@ class Instruction:
 
 # Compare two registers and takes branch if true. 12-bit B-immediate encodes signed offsets in multiples of 2 bytes. Offset is sign-extended and added to address of branch instruction.
 
-#     BEQ (branch equal): takes branch if rs1 and rs2 are equal
-#     BNE (branch not equal): takes branch if rs1 and rs2 are not equal
-        elif instr == "bne":
+        elif instr in ["bne", "beq"]:
             if arguments[0] not in machine_state["register"].keys():
                 source1 = 0
             else:
@@ -285,12 +283,20 @@ class Instruction:
             except:
                 dest = machine_state["label"][arguments[2]]
 
-            if source1 == source2:
+#     BEQ (branch equal): takes branch if rs1 and rs2 are equal
+            if instr == "beq" and source1 != source2:
+                machine_state["pc"] = dest
+#     BNE (branch not equal): takes branch if rs1 and rs2 are not equal
+            elif instr == "bne" and source1 != source2:
+                machine_state["pc"] = dest
+#     BLT (branch less than): takes branch if rs1 is less than rs2
+            elif instr == "blt" and source1 < source2:
+                machine_state["pc"] = dest
+#     BGE (branch greater than): takes branch if rs1 is greater than rs2
+            elif instr == "bge" and source1 > source2:
                 machine_state["pc"] = dest
 
-#     BLT (branch less than): takes branch if rs1 is less than rs2
 #     BLTU (branch less than unsigned): takes branch if rs1 is less than rs2 but unsigned
-#     BGE (branch greater than): takes branch if rs1 is greater than rs2
 #     BGEU (branch greater than unsigned): takes branch if rs1 is greater than rs2 but unsigned
 
 # Load/Store
@@ -298,8 +304,9 @@ class Instruction:
 #     LW: loads 32bit value from memory into rd
 #     SW: stores 32bit value from low bit of rs2 to memory 4byte boundary
 
-        elif instr == "test":
-            machine_state["register"]["zero"] = 55
+        elif instr == "halt":
+            # a bit hacky, a negative pc makes the rom access impossible and breaks the program
+            machine_state["pc"] = -1
 
         else:  # Error for unknown codes
             raise Exception(f"unknown operation: {instr}\n")
