@@ -17,11 +17,10 @@ entity addressdecoder is
     rs2 : out std_logic_vector(4 downto 0);
 
     imm_Itype : out std_logic_vector(11 downto 0);
-    imm_Utype : out std_logic_vector(20 downto 0);
+    imm_Utype : out std_logic_vector(19 downto 0);
     
-    imm_Stype : out std_logic_vector(5 downto 0);
-    
-    imm_StypeTwo : out std_logic_vector(7 downto 0);
+    imm_Stype : out std_logic_vector(4 downto 0);
+    imm_StypeTwo : out std_logic_vector(6 downto 0);
 
     imm_Btype : out std_logic;
     imm_BtypeTwo : out std_logic_vector(3 downto 0);
@@ -32,8 +31,9 @@ entity addressdecoder is
     imm_JtypeTwo : out std_logic;
     imm_JtypeThree : out std_logic_vector(9 downto 0);
     imm_JtypeFour : out std_logic;
-
-    I_nWE : out std_logic -- not write Enable; control signal also for jmp, beq, .... 
+    
+    I_nWE_R2 : out std_logic; -- not write Enable; control signal also for jmp, beq, .... 
+    I_nWE_RAM : out std_logic
   );
 
 end addressdecoder;
@@ -51,26 +51,30 @@ begin
             rs1 <= instruction(19 downto 15);
             rs2 <= instruction(24 downto 20);
             alu_sel_ff <= instruction(31 downto 25);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0'; -- erste fall schreiben (WB Stage)
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_IMM then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0';
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_LUI or instruction(6 downto 0) = OP_AUIPC then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             imm_Utype <= instruction(31 downto 12);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0';
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_LOAD then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0';
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_STORE then
             sel_opcode <= instruction(6 downto 0);
             imm_Stype <= instruction(11 downto 7);
@@ -78,6 +82,9 @@ begin
             rs1 <= instruction(19 downto 15);
             rs2 <= instruction(24 downto 20);
             imm_StypeTwo <= instruction(31 downto 25);
+            I_nWE_R2 <= '1'; -- hier schreiben wir nie rein
+            I_nWE_RAM <= '0';
+
         elsif instruction(6 downto 0) = OP_BRANCH then
             sel_opcode <= instruction(6 downto 0);
             imm_Btype <= instruction(7);
@@ -87,6 +94,8 @@ begin
             rs2 <= instruction(24 downto 20);
             imm_BtypeThree <= instruction(30 downto 25);
             imm_BtypeFour <= instruction(31);
+            I_nWE_R2 <= '1';
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_JAL then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
@@ -94,14 +103,15 @@ begin
             imm_JtypeTwo <= instruction(20);
             imm_JtypeThree <= instruction(30 downto 21);
             imm_JtypeFour <= instruction(31);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0';
+            I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_JALR then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             alu_sel_f <= instruction(14 downto 12);
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
-            I_nWE <= '0';
+            I_nWE_R2 <= '0';
         end if;
     end process ; -- address_decoder
 

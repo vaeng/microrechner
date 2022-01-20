@@ -50,11 +50,11 @@ use ieee.std_logic_textio.all;
 use work.sramPkg.all;
 
 entity sram2 is
-generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
+generic (addrWd	: integer range 2 to 16	:= 8;	-- #address bits
 		dataWd	: integer range 2 to 32	:= 8;	-- #data bits
 		fileId	: string		:= "sram.dat"); -- filename
 port (		nCS	: in    std_logic;		-- not Chip Select
-		nWE	: in    std_logic;		-- not Write Enable
+			nWE	: in    std_logic;		-- not Write Enable
 	        addr	: in    std_logic_vector(addrWd-1 downto 0);
 	        dataIn	: in	std_logic_vector(dataWd-1 downto 0);
 	        dataOut	: out	std_logic_vector(dataWd-1 downto 0);
@@ -83,7 +83,6 @@ begin
     variable	ioAddr		: integer range sramMem'range; 
     variable	ioData		: std_logic_vector(dataWd-1 downto 0);
   begin
-	report integer'image(ioAddr);
 
     -- fileIO	dump/load the SRAM contents into/from file
     --------------------------------------------------------------------------
@@ -102,12 +101,16 @@ begin
 
 		elsif fileIO = load then	--  load sramData	----------------------
 			file_open(ioStat, ioFile, fileID, read_mode);
+			report fileID;
+
 			assert ioStat = open_ok report "SRAM - load: error opening data file" severity error;
 			while not endfile(ioFile) loop
 				readline(ioFile, ioLine);			-- read line
 				read(ioLine, ioAddr, rdStat);			-- read <addr>
+				report "Addresse: " & integer'image(ioAddr);
 				if rdStat then				--      <data>
 					read(ioLine, ioData, rdStat);
+					report "DataIN: " & integer'image(to_integer(unsigned(ioData)));
 				end if;
 				if rdStat then
 					sramMem(ioAddr) := ioData;

@@ -30,7 +30,7 @@ architecture testbench of procTst is
 
   component sram2 is
     generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
-        dataWd	: integer range 2 to 32	:= 8;	-- #data    bits
+        dataWd	: integer range 2 to 32	:= 32;	-- #data    bits
         fileId	: string		:= "sram.dat"); -- filename
     port (		nCS	: in    std_logic;		-- not Chip Select
         nWE	: in    std_logic;		-- not Write Enable
@@ -53,7 +53,7 @@ architecture testbench of procTst is
       ); 
   end component riscy;
 
-  signal random : std_logic_vector(31 downto 0) := "00000000000000000000000010110011";
+  signal random : std_logic_vector(31 downto 0) := (others => '0');
 
 begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt wird!!!!
   const0 <= '0';
@@ -63,18 +63,18 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   instMemI: sram2	generic map(
           addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "/Users/KerimErekmen/Desktop/Präsentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/test.dat")
+					fileID	=> "/Users/KerimErekmen/Desktop/Praesentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/test.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,
 					addr	=> iAddr(7 downto 0), -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
-					dataIn	=> open,
+					dataIn	=> random,
 					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
           addrWd	=> 8, -- vielleicht 32bit, aber 2**32 zellen zu viel?
 					dataWd	=> 32,
-					fileID	=> "dataMem.dat")
+					fileID	=> "/Users/KerimErekmen/Desktop/Praesentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/dataMem.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> dnWE,
