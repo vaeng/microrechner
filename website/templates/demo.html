@@ -15,13 +15,17 @@
                 <tr>
                     <th scope="col">ROM address</th>
                     <th scope="col">Instruction</th>
+                    <th>Hexadecimal</th>
                 </tr>
             </thead>
             <tbody>
                 {% for addr, instr in bytecode.items() %}
                 <tr>
-                    <th scope="row">{{addr}}</th>
+                    <th scope="row">{{addr | upper | replace("X", "x")}}</th>
                     <td>{{instr}}</td>
+                    <td>{{ '0x{0:02X}'.format(instr | int(base=2)) }}</td>
+                    <!-- https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.int -->
+                    <!-- https://www.rapidtables.com/convert/number/binary-to-hex.html -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -37,13 +41,15 @@
                 <tr>
                     <th scope="col">Register</th>
                     <th scope="col">Value</th>
+                    <th>Hexadecimal</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reg, val in reg_and_ram["register"].items() %}
                 <tr>
                     <th scope="row">{{reg}}</th>
-                    <td>{{val}}</td>
+                    <th>{{val}}</th>
+                    <td>{{ '0x{0:02X}'.format(val | int(base=2)) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -53,13 +59,15 @@
                 <tr>
                     <th scope="col">Ram address</th>
                     <th scope="col">Value</th>
+                    <th>Hexadecimal</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reg, val in reg_and_ram["ram"].items() %}
                 <tr>
                     <th scope="row">{{reg}}</th>
-                    <td>{{val}}</td>
+                    <th>{{val}}</th>
+                    <td>{{ '0x{0:02X}'.format(val | int(base=2)) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
