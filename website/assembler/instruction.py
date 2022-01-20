@@ -256,11 +256,22 @@ class Instruction:
 #     AND, OR, XOR (perform bitwise logical)
 #     SLL, SRL, SRA (logical left, logical right, arithmetic right shifts): value in "rs1 shift rs2"
 #     NOP (Instruction) := ADDI x0, x0, 0 --> NOP for Pipeline "Bubbles"
+        elif instr == "nop":
+            pass
 
 # Control Transfer Instructions:
 # Unconditional Jumps
 
 #     JAL(jump and link): JAL stores the address of the instruction following the jump (pc+4) into register rd
+        elif instr == "jal":
+            try:
+                jump = int(arguments[1])
+            except:
+                jump = machine_state["label"][arguments[1]]
+
+            machine_state["register"][arguments[0]] = machine_state["pc"] + 4
+            machine_state["pc"] += jump
+
 #     JALR (indirect jump instruction): see Implementation details in spec S.21
 
 # Conditional Jumps
@@ -301,9 +312,37 @@ class Instruction:
 
 # Load/Store
 
-#     LW: loads 32bit value from memory into rd
-#     SW: stores 32bit value from low bit of rs2 to memory 4byte boundary
+#     LW: loads 32bit value from memory into rd ex.: lw s2, 55(t2)
+        elif instr == "lw":
+            offset = int(arguments[1])
+            reg = arguments[2]
+            if reg not in machine_state["register"].keys():
+                ram_address = 0
+            else:
+                ram_address = machine_state["register"][reg] + offset
 
+            if ram_address not in machine_state["ram"].keys():
+                ram_content = 0
+            else:
+                ram_content = machine_state["ram"][ram_address]
+
+            machine_state["register"][arguments[0]] = ram_content
+
+#     SW: stores 32bit value from low bit of rs2 to memory 4byte boundary
+        elif instr == "sw":
+            offset = int(arguments[1])
+            reg = arguments[2]
+            if reg not in machine_state["register"].keys():
+                ram_address = 0
+            else:
+                ram_address = machine_state["register"][reg] + offset
+            if arguments[0] not in machine_state["register"].keys():
+                content = 0
+            else:
+                content = machine_state["register"][arguments[0]]
+            machine_state["ram"][ram_address] = content
+
+#      HALT
         elif instr == "halt":
             # a bit hacky, a negative pc makes the rom access impossible and breaks the program
             machine_state["pc"] = -1
