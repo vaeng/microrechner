@@ -23,7 +23,7 @@
                 <tr>
                     <th scope="row">{{addr | upper | replace("X", "x")}}</th>
                     <td>{{instr}}</td>
-                    <td>{{ '0x{0:02X}'.format(instr | int(base=2)) }}</td>
+                    <td>{{ '0x{0:08X}'.format(instr | int(base=2)) }}</td>
                     <!-- https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.int -->
                     <!-- https://www.rapidtables.com/convert/number/binary-to-hex.html -->
                 </tr>
@@ -49,7 +49,7 @@
                 <tr>
                     <th scope="row">{{reg}}</th>
                     <th>{{val}}</th>
-                    <td>{{ '0x{0:02X}'.format(val | int(base=2)) }}</td>
+                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -67,7 +67,7 @@
                 <tr>
                     <th scope="row">{{reg}}</th>
                     <th>{{val}}</th>
-                    <td>{{ '0x{0:02X}'.format(val | int(base=2)) }}</td>
+                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

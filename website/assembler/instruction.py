@@ -252,6 +252,20 @@ class Instruction:
 # Integer Register-Register Operations:
 
 #     ADD, SUB: addition of rs1 and rs2; rd = rs1 + rs2; ADD rd rs1 rs2
+        elif instr in ["add", "sub"]:
+            if arguments[1] not in machine_state["register"].keys():
+                source1 = 0
+            else:
+                source1 = machine_state["register"][arguments[1]]
+
+            if arguments[2] not in machine_state["register"].keys():
+                source2 = 0
+            else:
+                source2 = machine_state["register"][arguments[2]]
+            if instr == "add":
+                machine_state["register"][arguments[0]] = source1 + source2
+            if instr == "sub":
+                machine_state["register"][arguments[0]] = source1 - source2
 #     SLT, SLTU (signed, unsigned compares respectively): rd ? if rs1 < rs2 : 0;
 #     AND, OR, XOR (perform bitwise logical)
 #     SLL, SRL, SRA (logical left, logical right, arithmetic right shifts): value in "rs1 shift rs2"
@@ -278,7 +292,7 @@ class Instruction:
 
 # Compare two registers and takes branch if true. 12-bit B-immediate encodes signed offsets in multiples of 2 bytes. Offset is sign-extended and added to address of branch instruction.
 
-        elif instr in ["bne", "beq"]:
+        elif instr in ["bne", "beq", "blt", "bge"]:
             if arguments[0] not in machine_state["register"].keys():
                 source1 = 0
             else:
@@ -295,7 +309,7 @@ class Instruction:
                 dest = machine_state["label"][arguments[2]]
 
 #     BEQ (branch equal): takes branch if rs1 and rs2 are equal
-            if instr == "beq" and source1 != source2:
+            if instr == "beq" and source1 == source2:
                 machine_state["pc"] = dest
 #     BNE (branch not equal): takes branch if rs1 and rs2 are not equal
             elif instr == "bne" and source1 != source2:
