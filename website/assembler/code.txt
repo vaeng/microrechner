@@ -1,10 +1,13 @@
-addi t1, t4, 1
-addi t2, t4, 2
-addi t3, t4, 3
-addi t1, t4, 4
-bne s2, s4, test_label
+init:
+    addi a1, zero, 0
+    addi s2, zero, 0
+    jal ra, 16   
+    addi s3 zero, 1
+    addi a1, a1, 1
+    jal ra,  4
+    beq zero, zero, loop
+save:
+    sw s2, 0(a1)
+    beq zero, zero, ra
+loop:
 
-sw s2, 55(t2)
-
-test_label:
-    addi t3, t5, 0

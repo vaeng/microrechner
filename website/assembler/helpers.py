@@ -110,7 +110,7 @@ def runInstructions(input_text_array, instruction_limit):
 
     for _ in range(instruction_limit):
         pc = machine_state["pc"]
-        # no more instructions
+        # no more instructions, halt sets pc to -1. thus breaking this loop
         if pc not in machine_state["rom"].keys():
             break
         machine_state["rom"][pc].execute_command(machine_state)
