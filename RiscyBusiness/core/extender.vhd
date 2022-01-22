@@ -25,15 +25,14 @@ entity extender is
     imm_JtypeThree : in std_logic_vector(9 downto 0);
     imm_JtypeFour : in std_logic;
 
-    imm_O : out std_logic_vector(31 downto 0);
-    clk : in std_logic
+    imm_O : out std_logic_vector(31 downto 0)
   ) ;
 end extender;
 
 architecture arch of extender is
 begin
 
-  process( sel_opcode , clk)
+  process( sel_opcode)
   variable Itype_extender : std_logic_vector(31 downto 12); -- := (others => imm_Itype(11));
   variable Utype_extender : std_logic_vector(11 downto 0); -- := (others => '0');
   variable Jtype_extender : std_logic_vector(10 downto 0); -- := (others => imm_JtypeFour);
@@ -46,8 +45,6 @@ begin
   variable random4 : std_logic;
   variable random5 : std_logic;
   begin
-
-    if rising_edge(clk) then
       random1 := imm_Itype(11); 
       random2 := '0';
       random3 := imm_JtypeFour;
@@ -76,7 +73,6 @@ begin
           imm_O <= x"00000000";
       
       end case ;
-    end if;
 
   end process ;
 

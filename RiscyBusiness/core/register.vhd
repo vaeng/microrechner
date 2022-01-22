@@ -37,10 +37,9 @@ architecture behavioral of register_file32 is
          -- else -- wir wollen nur dann lesen, wenn nWE == 1 (high active) (vorher war sogar NUR abhängig von clk, jetzt aber auch von nWE)
           -- Read A and B before bypass
         end if;
-        
-        out_a <= registers(to_integer(unsigned(I_rs1)));
-        out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
       end if;
+      out_a <= registers(to_integer(unsigned(I_rs1)));
+      out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
     end process;
 
     O_rs1_out <= out_a;

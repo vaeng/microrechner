@@ -83,7 +83,7 @@ begin
     variable	ioAddr		: integer range sramMem'range; 
     variable	ioData		: std_logic_vector(dataWd-1 downto 0);
   begin
-
+	
     -- fileIO	dump/load the SRAM contents into/from file
     --------------------------------------------------------------------------
     if fileIO'event then
@@ -130,14 +130,17 @@ begin
 			  report "SRAM: nCS - X value"
 			  severity warning;
     end if;
+
     if nWE'event  then	assert not Is_X(nWE)
 			  report "SRAM: nWE - X value"
 			  severity warning;
     end if;
+
     if addr'event then	assert not Is_X(addr)
 			  report "SRAM: addr - X value"
 			  severity warning;
     end if;
+
 --    if dataIn'event then	assert not Is_X(dataIn)
 --			  report "SRAM: dataIn - X value"
 --			  severity warning;

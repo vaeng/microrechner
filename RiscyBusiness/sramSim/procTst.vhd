@@ -23,7 +23,7 @@ architecture testbench of procTst is
   signal clk, nRst	: std_logic;
   signal const0, const1	: std_logic;
   signal dnWE		: std_logic;
-  signal iAddr,  dAddr	: std_logic_vector(31 downto 0);
+  signal iAddr,  dAddr	: std_logic_vector(31 downto 0) := x"00000000";
   signal iDataO		: std_logic_vector(31 downto 0);
   signal dDataO, dDataI	: std_logic_vector(31 downto 0); -- dData0 for the RAM to register (for processes)
   signal iCtrl,  dCtrl	: fileIOty;

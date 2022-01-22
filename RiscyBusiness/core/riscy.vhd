@@ -82,8 +82,7 @@ architecture behavioral of riscy is
           imm_JtypeThree : in std_logic_vector(9 downto 0);
           imm_JtypeFour : in std_logic;
       
-          imm_O : out std_logic_vector(31 downto 0); 
-          clk : in std_logic
+          imm_O : out std_logic_vector(31 downto 0)
         ) ;
       end component extender;
 
@@ -123,7 +122,7 @@ architecture behavioral of riscy is
     signal alu_sel_signal_f_D : std_logic_vector(2 downto 0);
     signal alu_sel_signal_ff_D : std_logic_vector(6 downto 0);
     signal sel_opcode_signal_D : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
-    signal rd_signal_D : std_logic_vector(4 downto 0);
+    signal rd_signal_D : std_logic_vector(4 downto 0); -- kommt spaeter in die Registerbank
     signal rs1_signal_D : std_logic_vector(4 downto 0);
     signal rs2_signal_D : std_logic_vector(4 downto 0);
     signal imm_signal_Itype_D : std_logic_vector(11 downto 0);
@@ -140,7 +139,6 @@ architecture behavioral of riscy is
     signal imm_signal_JtypeFour_D : std_logic;
     signal rs1_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     signal rs2_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
-    signal rd_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     -- from fetch stage signals
     signal ins_mem_D : std_logic_vector(31 downto 0); -- instruction fetched form the memory
     signal O_Addr_D : std_logic_vector(31 downto 0); -- from PC.mux
@@ -275,8 +273,7 @@ architecture behavioral of riscy is
         imm_JtypeTwo => imm_signal_JtypeTwo_D,
         imm_JtypeThree => imm_signal_JtypeThree_D,
         imm_JtypeFour => imm_signal_JtypeFour_D,
-        imm_O => imm_O_D,
-        clk => clk
+        imm_O => imm_O_D
     );
 
     
@@ -315,8 +312,8 @@ architecture behavioral of riscy is
     begin
         if rising_edge(clk) then
             sel_opcode_signal_M <= sel_opcode_signal_X;
-            dAddr <= alu_out_X;
-            dDataI <= rs2_out_X;
+            dAddr <= alu_out_X; -- rs1+imm
+            dDataI <= rs2_out_X; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4
             dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
             nWE_M_R <= nWE_X_R;
             rd_signal_M <= rd_signal_X;

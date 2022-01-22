@@ -17,6 +17,7 @@ end pc_unit;
 
 architecture arch of pc_unit is
     signal current_pc : std_logic_vector(31 downto 0) := x"00000000"; -- default
+
 begin
 
     process(clk)
@@ -34,5 +35,6 @@ begin
     end process; 
 
     O_Addr <= current_pc;
+
 
 end arch ; -- arch
