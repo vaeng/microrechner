@@ -32,7 +32,7 @@ end extender;
 architecture arch of extender is
 begin
 
-  process( sel_opcode)
+  process( sel_opcode, imm_Itype, imm_Utype, imm_Btype, imm_Stype, imm_Jtype) -- damit der prozess 
   variable Itype_extender : std_logic_vector(31 downto 12); -- := (others => imm_Itype(11));
   variable Utype_extender : std_logic_vector(11 downto 0); -- := (others => '0');
   variable Jtype_extender : std_logic_vector(10 downto 0); -- := (others => imm_JtypeFour);
@@ -57,7 +57,7 @@ begin
       Stype_extender := (others => random4);
       Btype_extender := (others => random5);
 
-      case( sel_opcode ) is
+      case( sel_opcode) is
       
         when OP_IMM | OP_JALR =>
           imm_O <= Itype_extender & imm_Itype;
@@ -73,7 +73,7 @@ begin
           imm_O <= x"00000000";
       
       end case ;
-
+      
   end process ;
 
 end arch ; -- arch
