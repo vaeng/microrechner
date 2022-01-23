@@ -38,8 +38,8 @@ architecture behavioral of register_file32 is
           -- Read A and B before bypass
         end if;
       end if;
-      out_a <= registers(to_integer(unsigned(I_rs1)));
-      out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
+        out_a <= registers(to_integer(unsigned(I_rs1)));
+        out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
     end process;
 
     O_rs1_out <= out_a;
