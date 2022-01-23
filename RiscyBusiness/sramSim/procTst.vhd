@@ -63,7 +63,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   instMemI: sram2	generic map(
           addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "/Users/KerimErekmen/Desktop/Praesentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/test.dat")
+					fileID	=> "sramSim/test.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,
@@ -74,7 +74,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   dataMemI: sram2	generic map (	
           addrWd	=> 8, -- vielleicht 32bit, aber 2**32 zellen zu viel?
 					dataWd	=> 32,
-					fileID	=> "/Users/KerimErekmen/Desktop/Praesentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/dataMem.dat")
+					fileID	=> "sramSim/dataMem.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> dnWE,
