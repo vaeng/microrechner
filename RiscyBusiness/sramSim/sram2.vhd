@@ -151,7 +151,7 @@ begin
     if nCS = '0'	then				-- chip select
       if nWE = '0'	then				-- + write cycle
 		sramMem(to_integer(unsigned(addr))) := dataIn;
-		dataOut <= dataIn;
+		-- dataOut <= dataIn;
       else						-- + read cycle
 		dataOut <= sramMem(to_integer(unsigned(addr)));
       end if;	-- nWE = ...

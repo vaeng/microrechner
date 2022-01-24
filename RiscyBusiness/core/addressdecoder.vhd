@@ -82,7 +82,7 @@ begin
             rs1 <= instruction(19 downto 15);
             rs2 <= instruction(24 downto 20);
             imm_StypeTwo <= instruction(31 downto 25);
-            I_nWE_R2 <= '1'; -- hier schreiben wir nie rein
+            I_nWE_R2 <= '1'; -- somit schreiben wir hier nie rein
             I_nWE_RAM <= '0';
 
         elsif instruction(6 downto 0) = OP_BRANCH then

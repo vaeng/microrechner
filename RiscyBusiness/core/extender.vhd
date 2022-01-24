@@ -59,7 +59,7 @@ begin
 
       case( sel_opcode) is
       
-        when OP_IMM | OP_JALR =>
+        when OP_IMM | OP_JALR | OP_LOAD =>
           imm_O <= Itype_extender & imm_Itype;
         when OP_AUIPC | OP_LUI =>
           imm_o <= imm_Utype & Utype_extender;
