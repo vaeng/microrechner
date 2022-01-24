@@ -148,6 +148,7 @@ Hier werden nun 3 nops (auch 3 Takte) benutzt fÃ¼r das Data Hazard, bevor der nÃ
 
 > Use of a stall to handle a load/use hazard is called a load interlock. Load interlocks combined with forwarding suffice to handle all possible forms of data hazards!
 
+Ziel: Maximierter Durchsatz, d.h. ein Befehl pro Takt in die CPU aufnehmen mit potenziell vermeidbaren Hazards, durch die Logik er "Pipline Stages".
 
 
 
