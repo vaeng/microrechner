@@ -117,7 +117,4 @@ def runInstructions(input_text_array, instruction_limit):
         if machine_state["pc"] == pc:
             machine_state["pc"] += 4
 
-    register = {}
-    machine_state["register"] = register
-
     return machine_state
