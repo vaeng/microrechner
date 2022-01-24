@@ -164,7 +164,10 @@ Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input))
     O_rs2_out <= I_data_input
 ```
 
-gilt. Nun brauchen wir in diesem Fall keine NOPs.
+gilt. Nun brauchen wir in diesem Fall keine NOPs. 
+
+OP_IMM, OP_REG: brauchen zwei Takte, um in das Register zu schreiben
+OP_STORE, OP_LW: brauchen drei Takte, um in das Register zu schreiben
 
 
 
