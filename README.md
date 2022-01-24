@@ -136,6 +136,10 @@ Simulation step
     - signal update
   + No future events on A, B, X
 
+## Why use fused compare-and-branch instruction (unlike x86, ARM, SPARC, PowerPC ISA's)
+  - fused compare-and-branch instruction fits into a regular pipeline, avoids additional condition code state or use of a temporary register
+  - comparisons against zero require non-trivial circuit delay
+  - Another advantage of a fused compare-and-branch instruction is that branches are observed earlier in the front-end instruction stream, and so can be predicted earlier.
 
 
 
