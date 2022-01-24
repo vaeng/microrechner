@@ -163,7 +163,7 @@ architecture behavioral of riscy is
     -- mem stage signals
     signal sel_opcode_signal_M : opcode;
     signal rd_signal_M : std_logic_vector(4 downto 0);
-    signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
+    -- signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
 
     -- wb stage signals
     signal Data_output_WB: std_logic_vector(31 downto 0);
@@ -177,7 +177,7 @@ architecture behavioral of riscy is
     signal nWE_D_R2: std_logic; 
     signal nWE_X_R: std_logic;
     signal nWE_WB_R : std_logic;
-    signal nWE_M_R : std_logic;
+    -- signal nWE_M_R : std_logic;
 
 
     begin
@@ -252,8 +252,8 @@ architecture behavioral of riscy is
     );
 
     ALU_ADDRESSER: alu_entity port map(
-        val_a => O_Addr_D, -- #TODO output from extender unit
-        val_b => O_Addr_D,
+        val_a => O_Addr_D,
+        val_b => imm_O_D,  -- TODO output from extender unit
         alu_sel_f => alu_sel_signal_f_D, -- dont care
         alu_sel_ff => alu_sel_signal_ff_D, -- dont care
         alu_out => O_Addr_D2, -- to PC.MUX
@@ -281,15 +281,16 @@ architecture behavioral of riscy is
     -- high active für die enable signale nutzen
     pipleinestage_IF_ID : process(iData, O_Addr_F, clk) 
     begin
+        iAddr <= O_Addr_F; -- to INS MEM
         if rising_edge(clk) then
             ins_mem_D <= iData; -- 32bit opcode
-            O_Addr_D <= O_Addr_F;
-            iAddr <= O_Addr_F;
+            O_Addr_D <= O_Addr_F; -- to ALU ADDRESSER
         end if;
     end process ;
 
     pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, imm_O_D, nWE_D_RAM, nWE_D_R2, rd_signal_D, alu_sel_signal_ff_D, alu_sel_signal_f_D, clk) 
     begin
+        report "ALU OUT X: " & integer'image(to_integer(unsigned(alu_out_X)));
         if rising_edge(clk) then
             sel_opcode_signal_X <= sel_opcode_signal_D;
             rs1_out_X <= rs1_out_D;
@@ -310,31 +311,42 @@ architecture behavioral of riscy is
         end if;
     end process ;
 
+
     pipleinestage_EX_MEM : process(sel_opcode_signal_X, alu_out_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
     begin
+
+        -- logic for forwarding/bypassing
+        if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM then
+            Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
+            rd_signal_WB <= rd_signal_X; -- rd vom bytecode
+            nWE_WB_R <= nWE_X_R;
+        end if;
+
         if rising_edge(clk) then
-            sel_opcode_signal_M <= sel_opcode_signal_X;
+            
+            -- Store
+            -- sel_opcode_signal_M <= sel_opcode_signal_X;
             dAddr <= alu_out_X; -- rs1+im
             dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
             dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
-            nWE_M_R <= nWE_X_R;
-            rd_signal_M <= rd_signal_X;
-            alu_out_M <= alu_out_X;
+
+            if sel_opcode_signal_X = OP_LOAD then
+                Data_output_WB <= dDataO;
+            else
+                Data_output_WB <= x"00000000";
+            end if; 
+
         end if;
+
     end process;
 
-    pipleinestage_MEM_WB : process(sel_opcode_signal_M, alu_out_M, rd_signal_M, dDataO, clk) 
-    begin
-        if rising_edge(clk) then
-            if sel_opcode_signal_M = OP_LOAD then
-                Data_output_WB <= dDataO; -- from DataMEM
-            else
-                Data_output_WB <= alu_out_M; -- CPU.ALU.INT --> CPU.REG
-            end if;
-            
-            rd_signal_WB <= rd_signal_M; -- rd vom bytecode
-            nWE_WB_R <= nWE_M_R;
-        end if;
-    end process;
+    -- pipleinestage_MEM_WB : process(sel_opcode_signal_M, rd_signal_M, dDataO, clk) 
+    -- begin
+    --     if rising_edge(clk) then
+    --         if sel_opcode_signal_M = OP_LOAD then
+    --             Data_output_WB <= dDataO; -- from DataMEM
+    --         end if;
+    --     end if;
+    -- end process;
 
 end;

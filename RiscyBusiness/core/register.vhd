@@ -24,22 +24,27 @@ architecture behavioral of register_file32 is
 
     regFile: process (I_clk) is
     begin
+
       if rising_edge(I_clk) then        
+        
         -- Write and bypass
         if I_nWE = '0' then
           registers(to_integer(unsigned(I_rd))) <= I_data_input;  -- Write
-          -- if rs1 = rd then  -- Bypass for read rs2
-          --   rs1_out <= data_input;
-          -- end if;
-          -- if rs1 = rd then  -- Bypass for read rs1
-          --   rs2_out <= data_input;
-          -- end if;
-         -- else -- wir wollen nur dann lesen, wenn nWE == 1 (high active) (vorher war sogar NUR abhängig von clk, jetzt aber auch von nWE)
-          -- Read A and B before bypass
         end if;
+
       end if;
-        out_a <= registers(to_integer(unsigned(I_rs1)));
-        out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
+
+      out_a <= registers(to_integer(unsigned(I_rs1)));
+      out_b <= registers(to_integer(unsigned(I_rs2))); -- zuweisung (S.14 vhdlcrash) --> Zuweisung ein Takt spaeter
+
+      -- bypass
+      if I_rs1 = I_rd then  -- Bypass for read rs1
+        out_a <= I_data_input;
+      end if;
+      if I_rs2 = I_rd then  -- Bypass for read rs2
+        out_b <= I_data_input;
+      end if;
+
     end process;
 
     O_rs1_out <= out_a;
