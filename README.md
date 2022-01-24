@@ -144,7 +144,7 @@ Simulation step
 ## Data Hazard HW lösung
 ![DATA Hazard](img/dataHZ.png)
 
-Hier werden nun 3 nops (auch 3 Takte) benutzt für das Data Hazard, bevor der nächste Code in die Decode Phase kommt (sich die Daten aus dem Register holt) hat der vorherige es schon reingeschrieben, Verbesserungpotenzial durch forwarding müsste gemacht werden.
+Hier werden nun 3 nops (auch 3 Takte) benutzt für das Data Hazard, bevor der nächste Befehl in die Decode Phase kommt (sich die Daten aus dem Register holt), hat der vorherige Befehl es schon reingeschrieben. Verbesserungpotenzial durch forwarding müsste gemacht werden. Zurzeit benötigt man 3 nops. Man könnte aber schon in der EX Phase in das Register reinschreiben, sodass die Anzahl der Nops sich verringert.
 
 
 
