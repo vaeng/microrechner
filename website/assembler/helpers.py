@@ -100,7 +100,6 @@ def runInstructions(input_text_array, instruction_limit):
         "t5": 0,
         "t6": 0,
     }
-    # register = {}
     # empy ram:
     ram = {}
     machine_state = instructions2rom(input_text_array)
@@ -117,5 +116,8 @@ def runInstructions(input_text_array, instruction_limit):
         # instruction has not changed pc
         if machine_state["pc"] == pc:
             machine_state["pc"] += 4
+
+    register = {}
+    machine_state["register"] = register
 
     return machine_state
