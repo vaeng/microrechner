@@ -100,7 +100,7 @@ def runInstructions(input_text_array, instruction_limit):
         "t5": 0,
         "t6": 0,
     }
-    register = {}
+    # register = {}
     # empy ram:
     ram = {}
     machine_state = instructions2rom(input_text_array)

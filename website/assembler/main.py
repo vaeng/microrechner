@@ -9,6 +9,8 @@ from instruction import Instruction
 label_position = {}
 last_used_registers = [None, None, None, None]
 
+
+# J, B types are control hazards
 INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr",
                                 "beq", "bne", "blt", "bge", "bltu", "bgeu"]
 

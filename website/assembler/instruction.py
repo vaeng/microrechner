@@ -45,6 +45,7 @@ class Instruction:
     def set_address(self, address):
         self.address = address
 
+    
     def transform_immb_to_bytecode(self, label_address):
         # print(label_address, self.ram_position)
         imm_b = label_address - self.ram_position
@@ -222,6 +223,7 @@ class Instruction:
 
         return assCode
 
+    
     def execute_command(self, machine_state):
         # machine state has several entries:
         # dictionaries: ram, register, labels and rom
@@ -230,7 +232,7 @@ class Instruction:
         instr, *arguments = re.split(',? |\(|\)+', self.line)
 
 
-#         Integer Register-Immediate Instructions:
+#     Integer Register-Immediate Instructions:
 
 #     ADDI (Add imidiate): sign-extended 12-bit immediate to register rs1 (ADDI rd, rs1, 0)
         if instr == "addi":
