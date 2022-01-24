@@ -150,7 +150,7 @@ Hier werden nun 3 nops (auch 3 Takte) benutzt für das Data Hazard, bevor der n�
 
 Ziel: Maximierter Durchsatz, d.h. ein Befehl pro Takt in die CPU aufnehmen mit potenziell vermeidbaren Hazards, durch die Logik er "Pipline Stages".
 
-![DATA Hazard](img/dataHZ.png)
+![DATA Hazard](img/dataHZ2.png)
 
 Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input)) die Werte für den nächsten Befehl zurückgegeben. D.h. da die Werte schon in der EX Phase zur verfügung stehen, können wir diese Werte schon in die ED Phase zurückreichen. Wir mussten nur überprüfen ob 
 
