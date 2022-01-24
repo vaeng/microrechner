@@ -141,6 +141,10 @@ Simulation step
   - comparisons against zero require non-trivial circuit delay
   - Another advantage of a fused compare-and-branch instruction is that branches are observed earlier in the front-end instruction stream, and so can be predicted earlier.
 
+## Data Hazard HW lösung
+![DATA Hazard](img/compiler/dataHZ.png)
+Hier werden nun 3 nops (auch 3 Takte) benutzt für das Data Hazard, bevor der nächste Code in die Decode Phase kommt (sich die Daten aus dem Register holt) hat der vorherige es schon reingeschrieben, Verbesserungpotenzial durch forwarding müsste gemacht werden
+
 
 
 
