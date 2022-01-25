@@ -33,10 +33,10 @@ begin
                 val <= '1';
             elsif signed(rs1) /= signed(rs2) then -- bne
                 val <= '1';
-            else
-                val <= '0';
             end if;
-        end if; 
+        else
+            val <= '0';
+        end if;
     end process ; -- brancher
 
     branch_out <= val;

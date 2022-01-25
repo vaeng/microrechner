@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 20);		-- clock cycles
+	clkCycles	: positive	:= 85);		-- clock cycles
 end entity procTst;
 
 
@@ -63,7 +63,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   instMemI: sram2	generic map(
           addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "sramSim/datahazTest.dat")
+					fileID	=> "sramSim/loopTest.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,

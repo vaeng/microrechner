@@ -68,7 +68,7 @@ begin
         when OP_STORE =>
           imm_o <= Stype_extender & imm_StypeTwo & imm_Stype;
         when OP_BRANCH =>
-          imm_o <= imm_BtypeFour & imm_Btype & imm_BtypeThree & imm_BtypeTwo & '0';
+          imm_o <= Btype_extender & imm_BtypeFour & imm_Btype & imm_BtypeThree & imm_BtypeTwo & '0';
         when others =>
           imm_O <= x"00000000";
       

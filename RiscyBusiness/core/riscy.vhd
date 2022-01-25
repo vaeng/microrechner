@@ -366,7 +366,7 @@ architecture behavioral of riscy is
                 rd_signal_M <= rd_signal_X;
                 nWE_M_R <= nWE_X_R;
                 sel_opcode_signal_M <= sel_opcode_signal_X;
-                alu_out_M <= alu_out_X; 
+                alu_out_M <= alu_out_X;
             end if;
         end if;
 

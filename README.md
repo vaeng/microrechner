@@ -165,6 +165,9 @@ Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input))
 ```
 
 gilt. Nun brauchen wir in diesem Fall keine NOPs. (EDIT: Jetzt nur noch einen leider... die Daten aus dem RAM kommen sonst nicht wie gewollt)
+OP_IMM, OP_REG: danach ein NOP
+OP_STORE: danach zwei NOP
+OP_LOAD: danach drei NOP
 
 OP_IMM, OP_REG: brauchen zwei Takte, um in das Register zu schreiben 
 OP_STORE: braucht drei Takte um in D_RAM zu schreiben (ab dnwe=0 (low active) wird reingeschrieben; ab 140ns wird geschrieben bis 160ns, somit 20ns sekunden Zeit um reinzuschreiben)
