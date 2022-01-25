@@ -2,7 +2,7 @@ GHDL_CMD = ghdl
 GTKWAVEL_CMD = gtkwave
 GHDL_FLAGS1 = --std=08
 GHDL_FLAGS2 = --workdir=work
-GTKWAVE_CHDIR=pwd
+GTKWAVE_CHDIR = pwd
 
 all: clean compile run
 

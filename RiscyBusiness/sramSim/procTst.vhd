@@ -63,7 +63,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   instMemI: sram2	generic map(
           addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "sramSim/SwLWTest.dat")
+					fileID	=> "sramSim/datahazTest.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,

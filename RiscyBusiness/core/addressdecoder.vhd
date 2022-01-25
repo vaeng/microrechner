@@ -51,7 +51,7 @@ begin
             rs1 <= instruction(19 downto 15);
             rs2 <= instruction(24 downto 20);
             alu_sel_ff <= instruction(31 downto 25);
-            I_nWE_R2 <= '0'; -- erste fall schreiben (WB Stage)
+            I_nWE_R2 <= '0'; -- erster fall schreiben (WB Stage)
             I_nWE_RAM <= '1';
         elsif instruction(6 downto 0) = OP_IMM then
             sel_opcode <= instruction(6 downto 0);
@@ -84,7 +84,6 @@ begin
             imm_StypeTwo <= instruction(31 downto 25);
             I_nWE_R2 <= '1'; -- somit schreiben wir hier nie rein
             I_nWE_RAM <= '0';
-
         elsif instruction(6 downto 0) = OP_BRANCH then
             sel_opcode <= instruction(6 downto 0);
             imm_Btype <= instruction(7);
@@ -112,6 +111,15 @@ begin
             rs1 <= instruction(19 downto 15);
             imm_Itype <= instruction(31 downto 20);
             I_nWE_R2 <= '0';
+            I_nWE_RAM <= '1';
+        else
+            sel_opcode <= (others => '0');
+            rd <= (others => '0');
+            alu_sel_f <= (others => '0');
+            rs1 <= (others => '0');
+            imm_Itype <= (others => '0');
+            I_nWE_R2 <= '1';
+            I_nWE_RAM <= '1';
         end if;
     end process ; -- address_decoder
 

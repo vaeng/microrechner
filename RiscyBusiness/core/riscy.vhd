@@ -27,10 +27,15 @@ architecture behavioral of riscy is
         I_rs1: in std_logic_vector(4 downto 0); -- input
         I_rs2: in std_logic_vector(4 downto 0); -- input
         I_rd: in std_logic_vector(4 downto 0); -- input
+        I_rd2: in std_logic_vector(4 downto 0); -- input
         I_data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage (ALUor from the mem(e.g. through a lw instrucution)
+        I_data_input2: in std_logic_vector(31 downto 0);
+        sel_opcode: in opcode;
+        sel_opcode_lw: in opcode;
         O_rs1_out: out std_logic_vector(31 downto 0); -- data output
         O_rs2_out: out std_logic_vector(31 downto 0); -- data output
-        I_nWE   : in std_logic -- for conroll, writeEnable == 0 write otherwise read or do nothing
+        I_nWE   : in std_logic; -- for conroll, writeEnable == 0 write otherwise read or do nothing
+        I_nWE2   : in std_logic
         );
     end component register_file32;
 
@@ -163,22 +168,36 @@ architecture behavioral of riscy is
     -- mem stage signals
     signal sel_opcode_signal_M : opcode;
     signal rd_signal_M : std_logic_vector(4 downto 0);
-    -- signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
-
+    signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
     -- wb stage signals
     signal Data_output_WB: std_logic_vector(31 downto 0);
     signal rd_signal_WB : std_logic_vector(4 downto 0);
+    signal Data_output_WB_external: std_logic_vector(31 downto 0);
+    signal sel_opcode_signal_WB: opcode;
 
     -- control signals (the brain)
     -- control signals FETCH (instruction fetch and decode stage)
     signal nWE_D_RAM: std_logic; -- is dependent of the opcode #Todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
     signal nWE_X_RAM: std_logic;
+    signal nWE_M_RAM: std_logic;
 
     signal nWE_D_R2: std_logic; 
     signal nWE_X_R: std_logic;
     signal nWE_WB_R : std_logic;
-    -- signal nWE_M_R : std_logic;
+    signal nWE_WB_R2 : std_logic; -- only for lw
+    signal nWE_M_R : std_logic;
 
+
+    function to_string ( a: std_logic_vector) return string is
+        variable b : string (1 to a'length) := (others => NUL);
+        variable stri : integer := 1; 
+        begin
+            for i in a'range loop
+                b(stri) := std_logic'image(a((i)))(2);
+            stri := stri+1;
+            end loop;
+        return b;
+        end function;
 
     begin
     
@@ -231,11 +250,16 @@ architecture behavioral of riscy is
         I_clk => clk,
         I_rs1 => rs1_signal_D,
         I_rs2 => rs2_signal_D,
-        I_rd => rd_signal_WB,
+        I_rd => rd_signal_M,
+        I_rd2 => rd_signal_WB,
         I_data_input => Data_output_WB, -- 32 bit from DATAMEM --> Cpu.Register
+        I_data_input2 => Data_output_WB_external, 
+        sel_opcode => sel_opcode_signal_M,
+        sel_opcode_lw => sel_opcode_signal_WB,
         O_rs1_out => rs1_out_D, -- 32 bit output
         O_rs2_out => rs2_out_D, -- 32 bit output
-        I_nWE => nWE_WB_R
+        I_nWE => nWE_WB_R,
+        I_nWE2 => nWE_WB_R2
     );
 
 
@@ -252,8 +276,8 @@ architecture behavioral of riscy is
     );
 
     ALU_ADDRESSER: alu_entity port map(
-        val_a => O_Addr_D,
-        val_b => imm_O_D,  -- TODO output from extender unit
+        val_a => imm_O_D,
+        val_b => O_Addr_D,  -- TODO output from extender unit
         alu_sel_f => alu_sel_signal_f_D, -- dont care
         alu_sel_ff => alu_sel_signal_ff_D, -- dont care
         alu_out => O_Addr_D2, -- to PC.MUX
@@ -290,12 +314,12 @@ architecture behavioral of riscy is
 
     pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, imm_O_D, nWE_D_RAM, nWE_D_R2, rd_signal_D, alu_sel_signal_ff_D, alu_sel_signal_f_D, clk) 
     begin
-        report "ALU OUT X: " & integer'image(to_integer(unsigned(alu_out_X)));
+        -- report "ALU OUT X: " & integer'image(to_integer(unsigned(alu_out_X)));
         if rising_edge(clk) then
             sel_opcode_signal_X <= sel_opcode_signal_D;
             rs1_out_X <= rs1_out_D;
             
-            if sel_opcode_signal_D = OP_IMM or sel_opcode_signal_D = OP_STORE  or sel_opcode_signal_D = OP_LOAD then
+            if sel_opcode_signal_D = OP_STORE  or sel_opcode_signal_D = OP_LOAD or  sel_opcode_signal_D = OP_IMM then
                 rs2_out_X <= imm_O_D; -- for Store and Load 
                 rs2_out_X2 <= rs2_out_D; -- for store
             else
@@ -312,41 +336,58 @@ architecture behavioral of riscy is
     end process ;
 
 
-    pipleinestage_EX_MEM : process(sel_opcode_signal_X, alu_out_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
+    -- TODO
+    pipleinestage_EX_MEM : process(sel_opcode_signal_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
     begin
 
+        -- dieser teil ermoeglicht uns keine nops zu benutzen aber dataoutput aus der RAM funktioniert noch nicht so ganz der teil unten macht schon die arbeit
+        -- if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
+        --     Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
+        --     nWE_WB_R <= nWE_X_R;
+        --     rd_signal_M <= rd_signal_X; -- rd vom bytecode
+        --     sel_opcode_signal_M <= sel_opcode_signal_X;
+        --     dnWE <= nWE_X_RAM;
+        -- end if;
+
         -- logic for forwarding/bypassing
-        if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM then
-            Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
-            rd_signal_WB <= rd_signal_X; -- rd vom bytecode
-            nWE_WB_R <= nWE_X_R;
-        end if;
-
         if rising_edge(clk) then
-            
-            -- Store
-            -- sel_opcode_signal_M <= sel_opcode_signal_X;
-            dAddr <= alu_out_X; -- rs1+im
-            dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
-            dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
 
-            if sel_opcode_signal_X = OP_LOAD then
-                Data_output_WB <= dDataO;
+            if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
+                Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
+                nWE_WB_R <= nWE_X_R;
+                rd_signal_M <= rd_signal_X; -- rd vom bytecode
+                sel_opcode_signal_M <= sel_opcode_signal_X;
+                dnWE <= nWE_X_RAM;
             else
-                Data_output_WB <= x"00000000";
-            end if; 
-
+                -- Store
+                dAddr <= alu_out_X; -- rs1+im
+                dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
+                dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
+                rd_signal_M <= rd_signal_X;
+                nWE_M_R <= nWE_X_R;
+                sel_opcode_signal_M <= sel_opcode_signal_X;
+                alu_out_M <= alu_out_X; 
+            end if;
         end if;
 
     end process;
 
-    -- pipleinestage_MEM_WB : process(sel_opcode_signal_M, rd_signal_M, dDataO, clk) 
-    -- begin
-    --     if rising_edge(clk) then
-    --         if sel_opcode_signal_M = OP_LOAD then
-    --             Data_output_WB <= dDataO; -- from DataMEM
-    --         end if;
-    --     end if;
-    -- end process;
+    pipleinestage_MEM_WB : process(sel_opcode_signal_M, dDataO, alu_out_M, rd_signal_M, nWE_M_R, clk) 
+    begin
+        if rising_edge(clk) then
+            -- Load
+            report "dDataO2: " & to_string(dDataO);
+            if sel_opcode_signal_M = OP_LOAD then
+                --report "SEL OP compare: " & to_string(sel_opcode_signal_X) & " " & to_string(OP_LOAD);
+                --report "dDataO: " & to_string(dDataO);
+                dAddr <= alu_out_M;
+                Data_output_WB_external <= dDataO;
+                sel_opcode_signal_WB <= sel_opcode_signal_M;
+                rd_signal_WB <= rd_signal_M;
+                nWE_WB_R2 <= nWE_M_R;
+            end if;
+
+        end if;
+    end process;
 
 end;

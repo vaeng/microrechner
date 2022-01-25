@@ -110,7 +110,7 @@ begin
 				report "Addresse: " & integer'image(ioAddr);
 				if rdStat then				--      <data>
 					read(ioLine, ioData, rdStat);
-					report "DataIN: " & integer'image(to_integer(unsigned(ioData)));
+					-- report "DataIN: " & integer'image(to_integer(unsigned(ioData)));
 				end if;
 				if rdStat then
 					sramMem(ioAddr) := ioData;

@@ -164,10 +164,11 @@ Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input))
     O_rs2_out <= I_data_input
 ```
 
-gilt. Nun brauchen wir in diesem Fall keine NOPs. 
+gilt. Nun brauchen wir in diesem Fall keine NOPs. (EDIT: Jetzt nur noch einen leider... die Daten aus dem RAM kommen sonst nicht wie gewollt)
 
-OP_IMM, OP_REG: brauchen zwei Takte, um in das Register zu schreiben
-OP_STORE, OP_LW: brauchen drei Takte, um in das Register zu schreiben
+OP_IMM, OP_REG: brauchen zwei Takte, um in das Register zu schreiben 
+OP_STORE: braucht drei Takte um in D_RAM zu schreiben (ab dnwe=0 (low active) wird reingeschrieben; ab 140ns wird geschrieben bis 160ns, somit 20ns sekunden Zeit um reinzuschreiben)
+OP_LOAD: braucht
 
 
 
