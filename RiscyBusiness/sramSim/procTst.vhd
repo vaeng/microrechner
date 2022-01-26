@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 50);		-- clock cycles
+	clkCycles	: positive	:= 30);		-- clock cycles
 end entity procTst;
 
 
@@ -63,7 +63,7 @@ begin
   instMemI: sram2	generic map(
           addrWd	=> 8,
 					dataWd	=> 32,
-					fileID	=> "sramSim/SwLwTest.dat")
+					fileID	=> "sramSim/dataHazTest3.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,

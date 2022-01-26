@@ -28,7 +28,7 @@ architecture behavioral of register_file32 is
     signal out_b : std_logic_vector(31 downto 0);
   begin
 
-    regFile: process (I_clk) is
+    regFile: process (I_clk, I_rs1, I_rs2) is
     begin
 
       if rising_edge(I_clk) then        
