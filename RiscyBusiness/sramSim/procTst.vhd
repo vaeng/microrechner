@@ -99,8 +99,8 @@ begin
   begin
     clk		<= '0';
     nRst	<= '0',   '1'  after 5 ns;
-    iCtrl	<= load,  none after 10 ns;
-    dCtrl	<= dump,  none after 10 ns;
+    iCtrl	<= load,  none after 5 ns;
+    dCtrl	<= dump,  none after 5 ns;
     wait for clkPeriod/2;
     for n in 1 to clkCycles loop
 	    clk <= '0', '1' after clkPeriod/2;

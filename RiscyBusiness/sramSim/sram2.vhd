@@ -91,10 +91,11 @@ begin
 		if fileIO = dump then	--  dump sramData	----------------------
 			file_open(ioStat, ioFile, fileID, write_mode);
 			assert ioStat = open_ok report "SRAM - dump: error opening data file" severity error;
+
 			for dAddr in sramMem'range loop
 				write(ioLine, dAddr);				-- format line:
 				write(ioLine, ' ');				--   <addr> <data>
-				write(ioLine, sramMem(dAddr));
+				write(ioLine, std_logic_vector(sramMem(dAddr)));
 				writeline(ioFile, ioLine);			-- write line
 			end loop;
 			file_close(ioFile);
@@ -151,7 +152,21 @@ begin
       if nWE = '0'	then				-- + write cycle
 		sramMem(to_integer(unsigned(addr))) := dataIn;
 		-- dataOut <= dataIn;
+
+		-- dump (Store) the data
+		file_open(ioStat, ioFile, fileID, write_mode);
+		assert ioStat = open_ok report "SRAM - dump: error opening data file" severity error;
+
+		for dAddr in sramMem'range loop
+			write(ioLine, dAddr);				-- format line:
+			write(ioLine, ' ');				--   <addr> <data>
+			write(ioLine, std_logic_vector(sramMem(dAddr)));
+			writeline(ioFile, ioLine);			-- write line
+		end loop;
+		file_close(ioFile);
+
       else						-- + read cycle
+	  -- report "The data out " & to_string(dataIn);
 		dataOut <= sramMem(to_integer(unsigned(addr)));
       end if;	-- nWE = ...
     end if;	-- nCS = '0'
