@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 70);		-- clock cycles
+	clkCycles	: positive	:= 50);		-- clock cycles
 end entity procTst;
 
 
@@ -33,7 +33,7 @@ architecture testbench of procTst is
         dataWd	: integer range 2 to 32	:= 32;	-- #data    bits
         fileId	: string		:= "sram.dat"); -- filename
     port (		nCS	: in    std_logic;		-- not Chip Select
-        nWE	: in    std_logic;		-- not Write Enable
+              nWE	: in    std_logic;		-- not Write Enable
               addr	: in    std_logic_vector(addrWd-1 downto 0);
               dataIn	: in	std_logic_vector(dataWd-1 downto 0);
               dataOut	: out	std_logic_vector(dataWd-1 downto 0);
@@ -55,13 +55,13 @@ architecture testbench of procTst is
 
   signal random : std_logic_vector(31 downto 0) := (others => '0');
 
-begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt wird!!!!
+begin
   const0 <= '0';
   const1 <= '1';
 
   -- memories		------------------------------------------------------
   instMemI: sram2	generic map(
-          addrWd	=> 8, -- vorher bei 8
+          addrWd	=> 8,
 					dataWd	=> 32,
 					fileID	=> "sramSim/SwLwTest.dat")
 			port map    (	
@@ -99,13 +99,12 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   begin
     clk		<= '0';
     nRst	<= '0',   '1'  after 5 ns;
-    iCtrl	<= load,  none after 5 ns;
-    dCtrl	<= load,  none after 5 ns;
+    iCtrl	<= load,  none after 10 ns;
+    dCtrl	<= dump,  none after 10 ns;
     wait for clkPeriod/2;
     for n in 1 to clkCycles loop
 	    clk <= '0', '1' after clkPeriod/2;
 	    wait for clkPeriod;
-    
     end loop;
     wait;
   end process stiP;

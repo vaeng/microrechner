@@ -89,12 +89,12 @@ begin
     if fileIO'event then
       	
 		if fileIO = dump then	--  dump sramData	----------------------
-			file_open(ioStat, ioFile, fileid, write_mode);
+			file_open(ioStat, ioFile, fileID, write_mode);
 			assert ioStat = open_ok report "SRAM - dump: error opening data file" severity error;
 			for dAddr in sramMem'range loop
 				write(ioLine, dAddr);				-- format line:
 				write(ioLine, ' ');				--   <addr> <data>
-				write(ioLine, std_logic_vector(sramMem(dAddr)));
+				write(ioLine, sramMem(dAddr));
 				writeline(ioFile, ioLine);			-- write line
 			end loop;
 			file_close(ioFile);
@@ -102,12 +102,11 @@ begin
 		elsif fileIO = load then	--  load sramData	----------------------
 			file_open(ioStat, ioFile, fileID, read_mode);
 			report fileID;
-
 			assert ioStat = open_ok report "SRAM - load: error opening data file" severity error;
 			while not endfile(ioFile) loop
 				readline(ioFile, ioLine);			-- read line
 				read(ioLine, ioAddr, rdStat);			-- read <addr>
-				report "Addresse: " & integer'image(ioAddr);
+				-- report "Addresse: " & integer'image(ioAddr);
 				if rdStat then				--      <data>
 					read(ioLine, ioData, rdStat);
 					-- report "DataIN: " & integer'image(to_integer(unsigned(ioData)));
