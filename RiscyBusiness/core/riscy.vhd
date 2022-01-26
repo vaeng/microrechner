@@ -357,7 +357,6 @@ architecture behavioral of riscy is
                 nWE_WB_R <= nWE_X_R;
                 rd_signal_M <= rd_signal_X; -- rd vom bytecode
                 sel_opcode_signal_M <= sel_opcode_signal_X;
-                dnWE <= nWE_X_RAM;
             else
                 -- Store
                 dAddr <= alu_out_X; -- rs1+im
@@ -380,7 +379,6 @@ architecture behavioral of riscy is
             if sel_opcode_signal_M = OP_LOAD then
                 --report "SEL OP compare: " & to_string(sel_opcode_signal_X) & " " & to_string(OP_LOAD);
                 --report "dDataO: " & to_string(dDataO);
-                dAddr <= alu_out_M;
                 Data_output_WB_external <= dDataO;
                 sel_opcode_signal_WB <= sel_opcode_signal_M;
                 rd_signal_WB <= rd_signal_M;

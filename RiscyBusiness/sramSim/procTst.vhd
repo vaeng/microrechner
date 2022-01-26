@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 85);		-- clock cycles
+	clkCycles	: positive	:= 70);		-- clock cycles
 end entity procTst;
 
 
@@ -26,7 +26,7 @@ architecture testbench of procTst is
   signal iAddr,  dAddr	: std_logic_vector(31 downto 0) := x"00000000";
   signal iDataO		: std_logic_vector(31 downto 0);
   signal dDataO, dDataI	: std_logic_vector(31 downto 0); -- dData0 for the RAM to register (for processes)
-  signal iCtrl,  dCtrl	: fileIOty;
+  signal iCtrl, dCtrl : fileIOty;
 
   component sram2 is
     generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
@@ -63,7 +63,7 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
   instMemI: sram2	generic map(
           addrWd	=> 8, -- vorher bei 8
 					dataWd	=> 32,
-					fileID	=> "sramSim/loopTest.dat")
+					fileID	=> "sramSim/SwLwTest.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,
