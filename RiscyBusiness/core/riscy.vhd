@@ -115,10 +115,11 @@ architecture behavioral of riscy is
 
     component brancher_logic is
         port (
-           sel_opcode : in opcode;
-          rs1: in std_logic_vector(31 downto 0);
-          rs2: in std_logic_vector(31 downto 0);
-          branch_out: out std_logic
+            sel_opcode : in opcode;
+            sel_f : in func_3;
+            rs1: in std_logic_vector(31 downto 0);
+            rs2: in std_logic_vector(31 downto 0);
+            branch_out: out std_logic
           );
     end component brancher_logic;
 
@@ -213,6 +214,7 @@ architecture behavioral of riscy is
     -- controller for the brancher
     brancher_brain: brancher_logic port map(
         sel_opcode => sel_opcode_signal_D,
+        sel_f => alu_sel_signal_f_D,
         rs1 => rs1_out_D,
         rs2 => rs2_out_D,
         branch_out => branch_out
@@ -365,6 +367,7 @@ architecture behavioral of riscy is
                 dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
                 rd_signal_M <= rd_signal_X;
                 nWE_M_R <= nWE_X_R;
+                nWE_WB_R <= nWE_X_R;
                 sel_opcode_signal_M <= sel_opcode_signal_X;
                 alu_out_M <= alu_out_X;
             end if;

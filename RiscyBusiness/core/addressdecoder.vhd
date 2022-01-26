@@ -39,7 +39,7 @@ entity addressdecoder is
 end addressdecoder;
 
 architecture behavior of addressdecoder is
-
+    signal default : std_logic_vector(31 downto 25) := (others => '1');
 begin
 
     address_decoder : process(instruction) -- instruction register
@@ -61,12 +61,14 @@ begin
             imm_Itype <= instruction(31 downto 20);
             I_nWE_R2 <= '0';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_LUI or instruction(6 downto 0) = OP_AUIPC then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
             imm_Utype <= instruction(31 downto 12);
             I_nWE_R2 <= '0';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_LOAD then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
@@ -75,6 +77,7 @@ begin
             imm_Itype <= instruction(31 downto 20);
             I_nWE_R2 <= '0';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_STORE then
             sel_opcode <= instruction(6 downto 0);
             imm_Stype <= instruction(11 downto 7);
@@ -84,6 +87,7 @@ begin
             imm_StypeTwo <= instruction(31 downto 25);
             I_nWE_R2 <= '1'; -- somit schreiben wir hier nie rein
             I_nWE_RAM <= '0';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_BRANCH then
             sel_opcode <= instruction(6 downto 0);
             imm_Btype <= instruction(7);
@@ -95,6 +99,7 @@ begin
             imm_BtypeFour <= instruction(31);
             I_nWE_R2 <= '1';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_JAL then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
@@ -104,6 +109,7 @@ begin
             imm_JtypeFour <= instruction(31);
             I_nWE_R2 <= '0';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         elsif instruction(6 downto 0) = OP_JALR then
             sel_opcode <= instruction(6 downto 0);
             rd <= instruction(11 downto 7);
@@ -112,6 +118,7 @@ begin
             imm_Itype <= instruction(31 downto 20);
             I_nWE_R2 <= '0';
             I_nWE_RAM <= '1';
+            alu_sel_ff <= default;
         else
             sel_opcode <= (others => '0');
             rd <= (others => '0');
