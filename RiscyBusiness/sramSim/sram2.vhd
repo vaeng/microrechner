@@ -161,6 +161,8 @@ begin
 			write(ioLine, dAddr);				-- format line:
 			write(ioLine, ' ');				--   <addr> <data>
 			write(ioLine, std_logic_vector(sramMem(dAddr)));
+			write(ioLine, ' ');
+			write(ioLine, to_integer(signed(std_logic_vector(sramMem(dAddr)))));
 			writeline(ioFile, ioLine);			-- write line
 		end loop;
 		file_close(ioFile);
