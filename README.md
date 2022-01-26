@@ -165,13 +165,18 @@ Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input))
 ```
 
 gilt. Nun brauchen wir in diesem Fall keine NOPs. (EDIT: Jetzt nur noch einen leider... die Daten aus dem RAM kommen sonst nicht wie gewollt)
-OP_IMM, OP_REG: danach ein NOP
+OP_IMM, OP_REG: danach ein NOP (nur ein weiteren Takt, um zu schreiben)
 OP_STORE: danach zwei NOP
 OP_LOAD: danach drei NOP
 
-OP_IMM, OP_REG: brauchen zwei Takte, um in das Register zu schreiben 
-OP_STORE: braucht drei Takte um in D_RAM zu schreiben (ab dnwe=0 (low active) wird reingeschrieben; ab 140ns wird geschrieben bis 160ns, somit 20ns sekunden Zeit um reinzuschreiben)
-OP_LOAD: braucht
+![Control Hazard](img/brancherTimeingFalse.png)
+
+Die Register Werte, werden sofort gebraucht, da sonst die Falschen Werte miteinander verglichen werden und somit TRUE folgt, wie im oberen bild.
+
+![Control Hazard2](img/brancherworksFib.png)
+
+Hier wird ein Programm Simuliert, wo die Fibonacci Sequenz, bis zu einem Punkt, berechnet wird. Hier Funktioniert die Brancher logic, da sofort in der Decodephase die Richtigen Werte gelesen werden und nicht nur einen halben Takt später.
+
 
 
 
