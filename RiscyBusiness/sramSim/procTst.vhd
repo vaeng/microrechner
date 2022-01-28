@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 20);		-- clock cycles
+	clkCycles	: positive	:= 500);		-- clock cycles
 end entity procTst;
 
 
@@ -23,17 +23,17 @@ architecture testbench of procTst is
   signal clk, nRst	: std_logic;
   signal const0, const1	: std_logic;
   signal dnWE		: std_logic;
-  signal iAddr,  dAddr	: std_logic_vector(31 downto 0);
+  signal iAddr,  dAddr	: std_logic_vector(31 downto 0) := x"00000000";
   signal iDataO		: std_logic_vector(31 downto 0);
   signal dDataO, dDataI	: std_logic_vector(31 downto 0); -- dData0 for the RAM to register (for processes)
-  signal iCtrl,  dCtrl	: fileIOty;
+  signal iCtrl, dCtrl : fileIOty;
 
   component sram2 is
     generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
-        dataWd	: integer range 2 to 32	:= 8;	-- #data    bits
+        dataWd	: integer range 2 to 32	:= 32;	-- #data    bits
         fileId	: string		:= "sram.dat"); -- filename
     port (		nCS	: in    std_logic;		-- not Chip Select
-        nWE	: in    std_logic;		-- not Write Enable
+              nWE	: in    std_logic;		-- not Write Enable
               addr	: in    std_logic_vector(addrWd-1 downto 0);
               dataIn	: in	std_logic_vector(dataWd-1 downto 0);
               dataOut	: out	std_logic_vector(dataWd-1 downto 0);
@@ -53,28 +53,28 @@ architecture testbench of procTst is
       ); 
   end component riscy;
 
-  signal random : std_logic_vector(31 downto 0) := "00000000000000000000000010110011";
+  signal random : std_logic_vector(31 downto 0) := (others => '0');
 
-begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt wird!!!!
+begin
   const0 <= '0';
   const1 <= '1';
 
   -- memories		------------------------------------------------------
   instMemI: sram2	generic map(
-          addrWd	=> 8, -- vorher bei 8
+          addrWd	=> 8,
 					dataWd	=> 32,
-					fileID	=> "/Users/KerimErekmen/Desktop/Präsentation/Studium/Semester5/Projekt/microrechner/RiscyBusiness/sramSim/test.dat")
+					fileID	=> "sramSim/fib.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,
 					addr	=> iAddr(7 downto 0), -- 256x32 fuer die Befehle (instructionAddress), iaddr ist fuer den pc
-					dataIn	=> open,
+					dataIn	=> random,
 					dataOut	=> iDataO, -- this is the instruction to decode, its an input to iData port first in decode stage
 					fileIO	=> iCtrl);
   dataMemI: sram2	generic map (	
           addrWd	=> 8, -- vielleicht 32bit, aber 2**32 zellen zu viel?
 					dataWd	=> 32,
-					fileID	=> "dataMem.dat")
+					fileID	=> "sramSim/dataMem.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> dnWE,
@@ -100,12 +100,11 @@ begin -- probiere erstmal aus, ob ueberhaupt ein Befehl aus dem Speicher geholt 
     clk		<= '0';
     nRst	<= '0',   '1'  after 5 ns;
     iCtrl	<= load,  none after 5 ns;
-    dCtrl	<= load,  none after 5 ns;
+    dCtrl	<= dump,  none after 5 ns;
     wait for clkPeriod/2;
     for n in 1 to clkCycles loop
 	    clk <= '0', '1' after clkPeriod/2;
 	    wait for clkPeriod;
-    
     end loop;
     wait;
   end process stiP;

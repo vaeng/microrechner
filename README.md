@@ -1,5 +1,7 @@
 ## Processor
 
+![Riscy](img/riscy.jpg)
+
 ## What is a ISA (short)
 _A Processor must execute a sequence of instructions, where each instruction performs some primitive operation, such as adding two numbers. An instruction is encoded in binary form as a sequence of 1 or more bytes. The instructions supported by a particular processor and their byte-level encodings are known as its instruction set architecture (ISA). Different “families” of processors, such as Intel IA32 and x86-64, IBM/Freescale Power, and the ARM processor family, have different ISAs. A program compiled for one type of machine will not run on another. On the other hand, there are many dif- ferent models of processors within a single family. Each manufacturer produces processors of ever-growing performance and complexity, but the different models remain compatible at the ISA level. Popular families, such as x86-64, have pro- cessors supplied by multiple manufacturers. Thus, the **ISA provides a conceptual/functional layer of abstraction between compiler writers, who need only know what instructions are permitted and how they are encoded, and processor designers, who must build machines that execute those instructions. (E.Bryant, Computer Systems (2016))**_
 
@@ -136,6 +138,46 @@ Simulation step
     - signal update
   + No future events on A, B, X
 
+## Why use fused compare-and-branch instruction (unlike x86, ARM, SPARC, PowerPC ISA's)
+  - fused compare-and-branch instruction fits into a regular pipeline, avoids additional condition code state or use of a temporary register
+  - comparisons against zero require non-trivial circuit delay
+  - Another advantage of a fused compare-and-branch instruction is that branches are observed earlier in the front-end instruction stream, and so can be predicted earlier.
+
+## Data Hazard HW lösung
+![DATA Hazard](img/dataHZ.png)
+
+Hier werden nun 3 nops (auch 3 Takte) benutzt für das Data Hazard, bevor der nächste Befehl in die Decode Phase kommt (sich die Daten aus dem Register holt), hat der vorherige Befehl es schon reingeschrieben. Verbesserungpotenzial durch forwarding müsste gemacht werden. Zurzeit benötigt man 3 nops. Man könnte aber schon in der EX Phase in das Register reinschreiben, sodass die Anzahl der Nops sich verringert.
+
+> Use of a stall to handle a load/use hazard is called a load interlock. Load interlocks combined with forwarding suffice to handle all possible forms of data hazards!
+
+Ziel: Maximierter Durchsatz, d.h. ein Befehl pro Takt in die CPU aufnehmen mit potenziell vermeidbaren Hazards, durch die Logik er "Pipline Stages".
+
+![DATA Hazard](img/dataHZ2.png)
+
+Hier haben wir nun durch Forwarding (rd_signale(I_rd), ALU_Output(I_data_input)) die Werte für den nächsten Befehl zurückgegeben. D.h. da die Werte schon in der EX Phase zur verfügung stehen, können wir diese Werte schon in die ED Phase zurückreichen. Wir mussten nur überprüfen ob 
+
+```python
+  O_rs1_out <= registers[I_rs1]
+  O_rs2_out <= registers[I_rs2]
+
+  if rs1 == rd:
+    O_rs1_out <= I_data_input
+  if rs2 == rd:
+    O_rs2_out <= I_data_input
+```
+
+gilt. Nun brauchen wir in diesem Fall keine NOPs. (EDIT: Jetzt nur noch einen leider... die Daten aus dem RAM kommen sonst nicht wie gewollt)
+OP_IMM, OP_REG: danach ein NOP (nur ein weiteren Takt, um zu schreiben)
+OP_STORE: danach zwei NOP
+OP_LOAD: danach drei NOP
+
+![Control Hazard](img/brancherTimeingFalse.png)
+
+Die Register Werte, werden sofort gebraucht, da sonst die Falschen Werte miteinander verglichen werden und somit TRUE folgt, wie im oberen bild.
+
+![Control Hazard2](img/brancherworksFib.png)
+
+Hier wird ein Programm Simuliert, wo die Fibonacci Sequenz, bis zu einem Punkt, berechnet wird. Hier Funktioniert die Brancher logic, da sofort in der Decodephase die Richtigen Werte gelesen werden und nicht nur einen halben Takt später.
 
 
 

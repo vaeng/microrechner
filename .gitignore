@@ -2,3 +2,6 @@ website/assembler/__pycache__/
 website/__pycache__/
 website/assembler/bin/
 website/assembler/lib/
+website/lib/
+website/bin/
+**/.DS_Store

@@ -20,7 +20,7 @@ architecture behah of alu_entity is
 
 begin
 
-    process(val_a, val_b, alu_sel_f, alu_sel_ff, sel_opcode, alu_out) -- val_a := value of rs1; val_b := value of rs2; alu_out := value of rd
+    process(val_a, val_b, alu_sel_f, alu_sel_ff, sel_opcode) -- val_a := value of rs1; val_b := value of rs2; alu_out := value of rd
       alias lower_bits is val_b(4 downto 0); -- used also for "lower 5 bits of the I-immediate field"
       begin
         case(sel_opcode) is

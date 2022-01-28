@@ -16,14 +16,15 @@ entity pc_unit is
 end pc_unit;
 
 architecture arch of pc_unit is
-    signal current_pc : std_logic_vector(7 downto 0) := x"00"; -- default
+    signal current_pc : std_logic_vector(31 downto 0) := x"00000000"; -- default
+
 begin
-    
+
     process(clk)
     begin
         if rising_edge(clk) then
             if nRSt = '0' then
-                current_pc <= x"00"; -- reset signal "low active"
+                current_pc <= x"00000000"; -- reset signal "low active"
             elsif mux_control_target = '1' then
                 current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input; WB or from not integer pc
             else 
@@ -34,5 +35,6 @@ begin
     end process; 
 
     O_Addr <= current_pc;
+
 
 end arch ; -- arch

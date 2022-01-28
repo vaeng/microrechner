@@ -27,38 +27,69 @@ architecture behavioral of riscy is
         I_rs1: in std_logic_vector(4 downto 0); -- input
         I_rs2: in std_logic_vector(4 downto 0); -- input
         I_rd: in std_logic_vector(4 downto 0); -- input
+        I_rd2: in std_logic_vector(4 downto 0); -- input
         I_data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage (ALUor from the mem(e.g. through a lw instrucution)
+        I_data_input2: in std_logic_vector(31 downto 0);
+        sel_opcode: in opcode;
+        sel_opcode_lw: in opcode;
         O_rs1_out: out std_logic_vector(31 downto 0); -- data output
         O_rs2_out: out std_logic_vector(31 downto 0); -- data output
-        I_nWE   : in std_logic -- for conroll, writeEnable == 0 write otherwise read or do nothing
+        I_nWE   : in std_logic; -- for conroll, writeEnable == 0 write otherwise read or do nothing
+        I_nWE2   : in std_logic
         );
     end component register_file32;
 
     
     component addressdecoder is
         port (
-          instruction: in std_logic_vector(31 downto 0);  -- instruction fetched form the memory
-          alu_sel_f : out std_logic_vector(2 downto 0);
-          alu_sel_ff : out std_logic_vector(6 downto 0);
-          sel_opcode : out opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
-          rd : out std_logic_vector(4 downto 0);
-          rs1 : out std_logic_vector(4 downto 0);
-          rs2 : out std_logic_vector(4 downto 0);
-          imm_Itype : out std_logic_vector(11 downto 0);
-          imm_Utype : out std_logic_vector(20 downto 0);
-          imm_Stype : out std_logic_vector(5 downto 0);
-          imm_StypeTwo : out std_logic_vector(7 downto 0);
-          imm_Btype : out std_logic;
-          imm_BtypeTwo : out std_logic_vector(3 downto 0);
-          imm_BtypeThree : out std_logic_vector(5 downto 0);
-          imm_BtypeFour : out std_logic;
-          imm_Jtype : out std_logic_vector(7 downto 0);
-          imm_JtypeTwo : out std_logic;
-          imm_JtypeThree : out std_logic_vector(9 downto 0);
-          imm_JtypeFour : out std_logic;
-          I_nWE : out std_logic
+            instruction: in std_logic_vector(31 downto 0);  -- instruction fetched form the memory
+            alu_sel_f : out std_logic_vector(2 downto 0);
+            alu_sel_ff : out std_logic_vector(6 downto 0);
+            sel_opcode : out opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
+            rd : out std_logic_vector(4 downto 0);
+            rs1 : out std_logic_vector(4 downto 0);
+            rs2 : out std_logic_vector(4 downto 0);
+            imm_Itype : out std_logic_vector(11 downto 0);
+            imm_Utype : out std_logic_vector(19 downto 0);
+            imm_Stype : out std_logic_vector(4 downto 0);
+            imm_StypeTwo : out std_logic_vector(6 downto 0);
+            imm_Btype : out std_logic;
+            imm_BtypeTwo : out std_logic_vector(3 downto 0);
+            imm_BtypeThree : out std_logic_vector(5 downto 0);
+            imm_BtypeFour : out std_logic;
+            imm_Jtype : out std_logic_vector(7 downto 0);
+            imm_JtypeTwo : out std_logic;
+            imm_JtypeThree : out std_logic_vector(9 downto 0);
+            imm_JtypeFour : out std_logic;
+            I_nWE_R2 : out std_logic; -- not write Enable; control signal also for jmp, beq, .... 
+            I_nWE_RAM : out std_logic -- not write Enable; control signal also for jmp, beq, .... 
         );
     end component addressdecoder;
+
+    component extender is
+        port (
+          sel_opcode : in opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
+      
+          imm_Itype : in std_logic_vector(11 downto 0);
+      
+          imm_Utype : in std_logic_vector(19 downto 0);
+          
+          imm_Stype : in std_logic_vector(4 downto 0);
+          imm_StypeTwo : in std_logic_vector(6 downto 0);
+      
+          imm_Btype : in std_logic;
+          imm_BtypeTwo : in std_logic_vector(3 downto 0);
+          imm_BtypeThree : in std_logic_vector(5 downto 0);
+          imm_BtypeFour : in std_logic;
+      
+          imm_Jtype : in std_logic_vector(7 downto 0);
+          imm_JtypeTwo : in std_logic;
+          imm_JtypeThree : in std_logic_vector(9 downto 0);
+          imm_JtypeFour : in std_logic;
+      
+          imm_O : out std_logic_vector(31 downto 0)
+        ) ;
+      end component extender;
 
     
     component alu_entity is
@@ -84,9 +115,11 @@ architecture behavioral of riscy is
 
     component brancher_logic is
         port (
-          rs1: in std_logic_vector(31 downto 0);
-          rs2: in std_logic_vector(31 downto 0);
-          branch_out: out std_logic
+            sel_opcode : in opcode;
+            sel_f : in func_3;
+            rs1: in std_logic_vector(31 downto 0);
+            rs2: in std_logic_vector(31 downto 0);
+            branch_out: out std_logic
           );
     end component brancher_logic;
 
@@ -95,13 +128,13 @@ architecture behavioral of riscy is
     signal alu_sel_signal_f_D : std_logic_vector(2 downto 0);
     signal alu_sel_signal_ff_D : std_logic_vector(6 downto 0);
     signal sel_opcode_signal_D : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
-    signal rd_signal_D : std_logic_vector(4 downto 0);
+    signal rd_signal_D : std_logic_vector(4 downto 0); -- kommt spaeter in die Registerbank
     signal rs1_signal_D : std_logic_vector(4 downto 0);
     signal rs2_signal_D : std_logic_vector(4 downto 0);
     signal imm_signal_Itype_D : std_logic_vector(11 downto 0);
-    signal imm_signal_Utype_D : std_logic_vector(20 downto 0);
-    signal imm_signal_Stype_D : std_logic_vector(5 downto 0);
-    signal imm_signal_StypeTwo_D : std_logic_vector(7 downto 0);
+    signal imm_signal_Utype_D : std_logic_vector(19 downto 0);
+    signal imm_signal_Stype_D : std_logic_vector(4 downto 0);
+    signal imm_signal_StypeTwo_D : std_logic_vector(6 downto 0);
     signal imm_signal_Btype_D : std_logic;
     signal imm_signal_BtypeTwo_D : std_logic_vector(3 downto 0);
     signal imm_signal_BtypeThree_D : std_logic_vector(5 downto 0);
@@ -112,13 +145,13 @@ architecture behavioral of riscy is
     signal imm_signal_JtypeFour_D : std_logic;
     signal rs1_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     signal rs2_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
-    signal rd_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     -- from fetch stage signals
     signal ins_mem_D : std_logic_vector(31 downto 0); -- instruction fetched form the memory
     signal O_Addr_D : std_logic_vector(31 downto 0); -- from PC.mux
     signal O_Addr_D2 : std_logic_vector(31 downto 0); -- to PC.mux, we have to downcast 32 bits to 8 bits because the address space is 2**8
     signal branch_out : std_logic; -- the control signal for the mux
     signal O_Addr_F : std_logic_vector(31 downto 0);
+    signal imm_O_D: std_logic_vector(31 downto 0); -- imm signal
 
 
     -- execute stage signals
@@ -127,6 +160,7 @@ architecture behavioral of riscy is
     signal sel_opcode_signal_X : opcode; -- fuer jeden stage einen neuen sel_opcode[1, 2, 3, 4, 5] erstellen, da sonst dieser überschrieben wird und nicht weitergegeben werden kann
     signal rs1_out_X : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     signal rs2_out_X : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
+    signal rs2_out_X2 : std_logic_vector(31 downto 0); -- for store
     signal alu_out_X : std_logic_vector(31 downto 0); -- aus der Alu, somit erster Signal aus der
     signal rd_signal_X : std_logic_vector(4 downto 0);
 
@@ -136,16 +170,35 @@ architecture behavioral of riscy is
     signal sel_opcode_signal_M : opcode;
     signal rd_signal_M : std_logic_vector(4 downto 0);
     signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
-
     -- wb stage signals
     signal Data_output_WB: std_logic_vector(31 downto 0);
     signal rd_signal_WB : std_logic_vector(4 downto 0);
+    signal Data_output_WB_external: std_logic_vector(31 downto 0);
+    signal sel_opcode_signal_WB: opcode;
 
     -- control signals (the brain)
     -- control signals FETCH (instruction fetch and decode stage)
-    signal nWE_D: std_logic; -- is dependent of the opcode #Todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
-    signal nWE_X: std_logic;
+    signal nWE_D_RAM: std_logic; -- is dependent of the opcode #Todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
+    signal nWE_X_RAM: std_logic;
+    signal nWE_M_RAM: std_logic;
 
+    signal nWE_D_R2: std_logic; 
+    signal nWE_X_R: std_logic;
+    signal nWE_WB_R : std_logic;
+    signal nWE_WB_R2 : std_logic; -- only for lw
+    signal nWE_M_R : std_logic;
+
+
+    function to_string ( a: std_logic_vector) return string is
+        variable b : string (1 to a'length) := (others => NUL);
+        variable stri : integer := 1; 
+        begin
+            for i in a'range loop
+                b(stri) := std_logic'image(a((i)))(2);
+            stri := stri+1;
+            end loop;
+        return b;
+        end function;
 
     begin
     
@@ -160,6 +213,8 @@ architecture behavioral of riscy is
 
     -- controller for the brancher
     brancher_brain: brancher_logic port map(
+        sel_opcode => sel_opcode_signal_D,
+        sel_f => alu_sel_signal_f_D,
         rs1 => rs1_out_D,
         rs2 => rs2_out_D,
         branch_out => branch_out
@@ -186,20 +241,27 @@ architecture behavioral of riscy is
         imm_JtypeTwo => imm_signal_JtypeTwo_D,
         imm_JtypeThree => imm_signal_JtypeThree_D,
         imm_JtypeFour => imm_signal_JtypeFour_D,
-        I_nWE => nWE_D
+        I_nWE_R2 =>  nWE_D_R2,
+        I_nWE_RAM => nWE_D_RAM
     );
 
     -- 32x32 registerfile
     -- #todo high active für die enable signale nutzen? --> marvin nochmal nachfragen was er hiermit explizit meinte <-- das hast du geschrieben xD
-    REGISTER_FILE: register_file32 port map(
+    REGISTER_FILE: register_file32
+    port map(
         I_clk => clk,
         I_rs1 => rs1_signal_D,
         I_rs2 => rs2_signal_D,
-        I_rd => rd_signal_WB,
+        I_rd => rd_signal_M,
+        I_rd2 => rd_signal_WB,
         I_data_input => Data_output_WB, -- 32 bit from DATAMEM --> Cpu.Register
+        I_data_input2 => Data_output_WB_external, 
+        sel_opcode => sel_opcode_signal_M,
+        sel_opcode_lw => sel_opcode_signal_WB,
         O_rs1_out => rs1_out_D, -- 32 bit output
         O_rs2_out => rs2_out_D, -- 32 bit output
-        I_nWE => nWE_D
+        I_nWE => nWE_WB_R,
+        I_nWE2 => nWE_WB_R2
     );
 
 
@@ -216,61 +278,121 @@ architecture behavioral of riscy is
     );
 
     ALU_ADDRESSER: alu_entity port map(
-        val_a => O_Addr_D, -- #TODO output from extender unit
-        val_b => O_Addr_D,
+        val_a => imm_O_D,
+        val_b => O_Addr_D,  -- TODO output from extender unit
         alu_sel_f => alu_sel_signal_f_D, -- dont care
         alu_sel_ff => alu_sel_signal_ff_D, -- dont care
         alu_out => O_Addr_D2, -- to PC.MUX
         sel_opcode => sel_opcode_signal_D
     );
 
+    EXTENDER_IMM: extender port map(
+        sel_opcode => sel_opcode_signal_D,
+        imm_Itype => imm_signal_Itype_D,
+        imm_Utype => imm_signal_Utype_D,
+        imm_Stype => imm_signal_Stype_D,
+        imm_StypeTwo => imm_signal_StypeTwo_D,
+        imm_Btype => imm_signal_Btype_D,
+        imm_BtypeTwo => imm_signal_BtypeTwo_D,
+        imm_BtypeThree => imm_signal_BtypeThree_D,
+        imm_BtypeFour => imm_signal_BtypeFour_D,
+        imm_Jtype => imm_signal_Jtype_D,
+        imm_JtypeTwo => imm_signal_JtypeTwo_D,
+        imm_JtypeThree => imm_signal_JtypeThree_D,
+        imm_JtypeFour => imm_signal_JtypeFour_D,
+        imm_O => imm_O_D
+    );
+
     
     -- high active für die enable signale nutzen
     pipleinestage_IF_ID : process(iData, O_Addr_F, clk) 
     begin
+        iAddr <= O_Addr_F; -- to INS MEM
         if rising_edge(clk) then
             ins_mem_D <= iData; -- 32bit opcode
-            O_Addr_D <= O_Addr_F;
-            iAddr <= O_Addr_F;
+            O_Addr_D <= O_Addr_F; -- to ALU ADDRESSER
         end if;
     end process ;
 
-    pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, nWE_D, rd_signal_D, alu_sel_signal_ff_D, alu_sel_signal_f_D, clk) 
+    pipleinestage_ID_EX : process(sel_opcode_signal_D, rs1_out_D, rs2_out_D, imm_O_D, nWE_D_RAM, nWE_D_R2, rd_signal_D, alu_sel_signal_ff_D, alu_sel_signal_f_D, clk) 
     begin
+        -- report "ALU OUT X: " & integer'image(to_integer(unsigned(alu_out_X)));
         if rising_edge(clk) then
             sel_opcode_signal_X <= sel_opcode_signal_D;
             rs1_out_X <= rs1_out_D;
-            rs2_out_X <= rs2_out_D;
+            
+            if sel_opcode_signal_D = OP_STORE  or sel_opcode_signal_D = OP_LOAD or  sel_opcode_signal_D = OP_IMM then
+                rs2_out_X <= imm_O_D; -- for Store and Load 
+                rs2_out_X2 <= rs2_out_D; -- for store
+            else
+                rs2_out_X <= rs2_out_D; -- normal for Reg type
+            end if;
+
             rd_signal_X <= rd_signal_D;
             alu_sel_signal_ff_X <= alu_sel_signal_ff_D;
             alu_sel_signal_f_X <= alu_sel_signal_f_D;
-            nWE_X <= nWE_D;
+            nWE_X_RAM <= nWE_D_RAM;
+            nWE_X_R <= nWE_D_R2;
+
         end if;
     end process ;
 
-    pipleinestage_EX_MEM : process(sel_opcode_signal_X, alu_out_X, nWE_X, rd_signal_X, rs2_out_X, clk) 
+
+    -- TODO
+    pipleinestage_EX_MEM : process(sel_opcode_signal_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
     begin
+
+        -- dieser teil ermoeglicht uns keine nops zu benutzen aber dataoutput aus der RAM funktioniert noch nicht so ganz der teil unten macht schon die arbeit
+        -- if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
+        --     Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
+        --     nWE_WB_R <= nWE_X_R;
+        --     rd_signal_M <= rd_signal_X; -- rd vom bytecode
+        --     sel_opcode_signal_M <= sel_opcode_signal_X;
+        --     dnWE <= nWE_X_RAM;
+        -- end if;
+
+        -- logic for forwarding/bypassing
         if rising_edge(clk) then
-            sel_opcode_signal_M <= sel_opcode_signal_X;
-            dAddr <= alu_out_X;
-            dDataI <= rs2_out_X;
-            dnWE <= nWE_X; -- out to the DataMEM (external) dnWE is "out" signal
-            rd_signal_M <= rd_signal_X;
-            alu_out_M <= alu_out_X;
+
+            if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
+                Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
+                nWE_WB_R <= nWE_X_R;
+                rd_signal_M <= rd_signal_X; -- rd vom bytecode
+                sel_opcode_signal_M <= sel_opcode_signal_X;
+                dnWE <= nWE_X_RAM;
+            else
+                -- Store
+                dAddr <= alu_out_X; -- rs1+im
+                dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
+                dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
+                rd_signal_M <= rd_signal_X;
+                nWE_M_R <= nWE_X_R;
+                nWE_WB_R <= nWE_X_R;
+                sel_opcode_signal_M <= sel_opcode_signal_X;
+                alu_out_M <= alu_out_X;
+            end if;
         end if;
+
     end process;
 
-    pipleinestage_MEM_WB : process(sel_opcode_signal_M, alu_out_M, rd_signal_M, dDataO, clk) 
+    pipleinestage_MEM_WB : process(sel_opcode_signal_M, dDataO, alu_out_M, rd_signal_M, nWE_M_R, clk) 
     begin
         if rising_edge(clk) then
-            
+            -- Load
+            -- report "dDataO2: " & to_string(dDataO);
             if sel_opcode_signal_M = OP_LOAD then
-                Data_output_WB <= dDataO; -- from DataMEM
+                --report "SEL OP compare: " & to_string(sel_opcode_signal_X) & " " & to_string(OP_LOAD);
+                --report "dDataO: " & to_string(dDataO);
+                Data_output_WB_external <= dDataO;
+                sel_opcode_signal_WB <= sel_opcode_signal_M;
+                rd_signal_WB <= rd_signal_M;
+                nWE_WB_R2 <= nWE_M_R;
             else
-                Data_output_WB <= alu_out_M;
+                Data_output_WB_external <= (others => '0');
+                sel_opcode_signal_WB <= sel_opcode_signal_M;
+                rd_signal_WB <= rd_signal_M;
+                nWE_WB_R2 <= nWE_M_R;
             end if;
-
-            rd_signal_WB <= rd_signal_M; -- rd vom bytecode
         end if;
     end process;
 
