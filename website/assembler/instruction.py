@@ -45,7 +45,6 @@ class Instruction:
     def set_address(self, address):
         self.address = address
 
-    
     def transform_immb_to_bytecode(self, label_address):
         # print(label_address, self.ram_position)
         imm_b = label_address - self.ram_position
@@ -223,7 +222,6 @@ class Instruction:
 
         return assCode
 
-<<<<<<< HEAD
     def checkImm(self, imm, type, signed):
         if type == "i":  # 31-20 : 12
             exp = 12
@@ -309,9 +307,6 @@ class Instruction:
             self.addWarning(machine_state, "Underflow for: {self.line}")
             return upper_bound - (result - lower_bound)
 
-=======
-    
->>>>>>> a9ef82e728a91caa6c772edd85daef90c4fe31fa
     def execute_command(self, machine_state):
         # machine state has several entries:
         # dictionaries: ram, register, labels and rom
