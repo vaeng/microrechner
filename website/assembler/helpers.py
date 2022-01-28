@@ -65,41 +65,7 @@ def instructions2rom(input_text_array):
 def runInstructions(input_text_array, instruction_limit):
     machine_state = {}
     # initialize register to zeroes
-    register = {
-        "zero": 0,  # Hard-wired zero
-        "ra": 0,  # Return address
-        "sp": 0,  # Stack pointer
-        "gp": 0,  # Global pointer
-        "tp": 0,  # Thread pointer
-        "t0": 0,  # Temporary link register
-        "t1": 0,  # Temporaries
-        "t2": 0,  # Temporaries
-        "s0": 0,  # Saved register/frame pointer
-        "fp": 0,  # Saved register/frame pointer
-        "s1": 0,  # Saved register
-        "a0": 0,  # Function arguments/return values
-        "a1": 0,
-        "a2": 0,  # Function arguments
-        "a3": 0,
-        "a4": 0,
-        "a5": 0,
-        "a6": 0,
-        "a7": 0,
-        "s2": 0,  # Saved registers
-        "s3": 0,
-        "s4": 0,
-        "s5": 0,
-        "s6": 0,
-        "s7": 0,
-        "s8": 0,
-        "s9": 0,
-        "s10": 0,
-        "s11": 0,
-        "t3": 0,  # Temporaries
-        "t4": 0,
-        "t5": 0,
-        "t6": 0,
-    }
+    register = {}
     # empy ram:
     ram = {}
     machine_state = instructions2rom(input_text_array)
