@@ -29,7 +29,11 @@ def empty_form():
     else:
         instructions = ""
     if "run" in request.form.keys():
-        machine_state = runInstructions(instructions.splitlines(), 1000)
+        try:
+            machine_state = runInstructions(instructions.splitlines(), 1000)
+        except Exception as e:
+            bytecode = {}
+            bytecode["error"] = str(e)
     return render_template("demo.html", instructions=instructions, bytecode=bytecode, reg_and_ram=machine_state)
 
 

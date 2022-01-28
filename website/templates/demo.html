@@ -35,6 +35,10 @@
         <button type="submit" name="run" class="btn btn-secondary">Run Code</button>
         {% endif %}
 
+        {% for warning in reg_and_ram["warnings"] %}
+        <p style="color:red;"> {{warning}}</p>
+        {% endfor %}
+
         {% if reg_and_ram %}
         <table class="table table-striped">
             <thead>
