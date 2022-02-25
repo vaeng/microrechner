@@ -47,8 +47,8 @@ class Instruction:
 
     
     def transform_immb_to_bytecode(self, label_address):
-        # print(label_address, self.ram_position)
         imm_b = label_address - self.ram_position
+        print("he", label_address, self.ram_position, imm_b)
         imm_b4_1 = (imm_b & 0x1e) << 7
         imm_b11 = (imm_b & 0x800) >> 4
         imm_11_7 = (imm_b4_1 ^ imm_b11) >> 7

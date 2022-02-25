@@ -1,12 +1,14 @@
-# app.py
+#!/usr/bin/env python3
+
+import sys
+sys.path.append("lib/python3.9/site-packages/")
+
 from flask import Flask, request, jsonify, render_template
 from assembler.instruction import Instruction
 from assembler.helpers import instructions2bytecode, runInstructions
 
 import argparse  # https://docs.python.org/3/library/argparse.html
-import reg  # https://docs.python.org/3/library/re.html
 import re
-
 
 app = Flask(__name__)
 
@@ -18,7 +20,7 @@ def index():
 
 @app.route('/demo', methods=['GET', 'POST'])
 def empty_form():
-    instructions = request.form.get('instructions')
+    instructions = request.form.get('Instructions')
     bytecode = {}
     machine_state = {}
     if instructions:
@@ -30,9 +32,9 @@ def empty_form():
         instructions = ""
     if "run" in request.form.keys():
         machine_state = runInstructions(instructions.splitlines(), 1000)
-    return render_template("demo.html", instructions=instructions, bytecode=bytecode, reg_and_ram=machine_state)
+    return render_template("demo.html", instructions=instructions, instrbytecode=bytecode, reg_and_ram=machine_state)
 
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, port=5000)
+    app.run(threaded=True, port=5001)

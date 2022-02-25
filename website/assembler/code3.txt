@@ -1,0 +1,8 @@
+addi s0, zero, 20
+addi s1, zero, 0
+loop:
+    beq s0, s1, end
+    addi s0, s0, -1
+    sw s0, 0(s0)
+    bne s0, s1, loop
+end:

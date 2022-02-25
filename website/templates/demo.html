@@ -5,7 +5,7 @@
     <form action="/demo" method="POST">
         <div class="form-group">
             <label for="instructions">Instructions</label>
-            <textarea class="form-control" id="instructions" name="instructions" rows="5"
+            <textarea class="form-control" id="inst" name="Instructions" rows="5"
                 placeholder="Fill with Code">{{instructions}}</textarea>
         </div>
         <button type="submit" name="convert" class="btn btn-secondary">Convert</button>
@@ -19,7 +19,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for addr, instr in bytecode.items() %}
+                {% for addr, instr in instrbytecode.items() %}
                 <tr>
                     <th scope="row">{{addr | upper | replace("X", "x")}}</th>
                     <td>{{instr}}</td>

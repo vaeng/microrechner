@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse  # https://docs.python.org/3/library/argparse.html
-import reg  # https://docs.python.org/3/library/re.html
-import re
+import re # https://docs.python.org/3/library/re.html
 from instruction import Instruction
 
 
@@ -11,12 +10,10 @@ last_used_registers = [None, None, None, None]
 
 
 # J, B types are control hazards
-INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr",
-                                "beq", "bne", "blt", "bge", "bltu", "bgeu"]
+# INSTRUCTIONS_CAUSING_HAZARDS = ["jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu"]
 
 # hexstring starting with x to binary string of length n
 # example hex2binary("t3", 8) -> "00101000" t3 = x28 lui rd, bin(2)
-
 
 def hex2binary(hexString, binLength):
     s = "{0:0" + str(binLength) + "b}"
@@ -98,7 +95,7 @@ def main():
         if label is not None:
             instruction.set_address(label_position[label])
             print(instruction.address)
-        outputlines.append("{:20s} {:32s}\n".format(
+        outputlines.append("{:30s} {:32s}\n".format(
             str(hex(instruction.ram_position)), instruction.get_byte_code()))
 
     # write it
