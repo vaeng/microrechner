@@ -35,9 +35,9 @@ begin
                         if alu_sel_f = F_AND then  alu_out <= val_a and val_b; end if;
                         if alu_sel_f = F_SLT then  -- set less then writing 1 to rd if rs1 < rs2, 0 otherwise.
                             if (signed(val_a) < signed(val_b)) then 
-                                alu_out <= x"00000001"; 
+                                alu_out <= x"00000001";
                             else
-                                alu_out <= x"00000000";  
+                                alu_out <= x"00000000";
                             end if;
                         end if;
                         if alu_sel_f = F_SLTU then -- SLTU rd, x0, rs2 sets rd to 1 if rs2 is not equal to zero, otherwise sets rd to zero

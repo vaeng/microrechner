@@ -3,7 +3,7 @@
 import argparse  # https://docs.python.org/3/library/argparse.html
 import re # https://docs.python.org/3/library/re.html
 from instruction import Instruction
-
+import os, sys
 
 label_position = {}
 last_used_registers = [None, None, None, None]

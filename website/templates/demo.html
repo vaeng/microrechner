@@ -1,79 +1,149 @@
 {% extends 'base.html' %}
+{% block header%} Simulator {% endblock %}
 {% block content %}
 <br />
-<div class="container">
+<div class="container-fluid mt-3" style="height: 300px;
+width: 80%;
+background: rgb(10, 0, 0);
+margin: 10px auto;
+position: relative;">
+
     <form action="/demo" method="POST">
-        <div class="form-group">
-            <label for="instructions">Instructions</label>
-            <textarea class="form-control" id="inst" name="Instructions" rows="5"
-                placeholder="Fill with Code">{{instructions}}</textarea>
+        <br> 
+        
+        <div class="row">
+
+            <div class="col p-3 bg-primary text-white">
+                <label for="instructions"><strong><h3>Instructions-CodeArea</h3></strong></label>
+
+                <textarea class="form-control" id="instructions" name="Instructions" rows="15" 
+                    px" placeholder="Fill with RISC-V code" style="background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
+                    background-size: 100% 4rem;
+                    border: 1px solid #CCC;
+                    width: 100%;
+                    height: 300px;
+                    line-height: 2rem;
+                    margin: 0 auto;">{{instructions}}</textarea>
+
+
+                <button type="submit" class="btn btn-labeled btn-success" name="compile">
+                    <span class="btn-label"><i class="fa fa-code" aria-hidden="true"></i></span> | Compile</button>
+
+                {% if bytecode != "" %}
+                <div class="btn-group">
+                    <nav>
+                        <button type="submit" class="btn btn-labeled btn-success" name="run">
+                            <span class="btn-label"><i class="fa fa-play"></i></span> | Run</button>
+                            <button type="submit" class="btn btn-labeled btn-success" name="step">
+                                <span class="btn-label"><i class="fa fa-paw" aria-hidden="true"></i></span> | Step</button>
+                                <button type="submit" class="btn btn-labeled btn-success" name="stop">
+                                    <span class="btn-label"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></span> | Stop</button>
+                    </nav>
+                </div>
+                {% endif %}
+
+            </div>
+            
+            <div class="col p-3 bg-info text-dark my-custom-scrollbar">
+                <label for="ROM"><strong><h3>ROM-area</h3></strong></label>
+                <table class="table table-striped table-fixed">
+                    <thead class="thead-dark" style="position: sticky; top:0">
+                        <tr>
+                            <th scope="col">ROM address</th>
+                            <th scope="col">Instruction</th>
+                            <th>Hexadecimal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for addr, instr in bytecode.items() %}
+                        <tr height="100px">
+                            <th scope="row">{{addr | upper | replace("X", "x")}}</th>
+                            <td>{{instr}}</td>
+                            <td>{{ '0x{0:08X}'.format(instr | int(base=2)) }}</td>
+                            <!-- https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.int -->
+                            <!-- https://www.rapidtables.com/convert/number/binary-to-hex.html -->
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>    
+             </div>
         </div>
-        <button type="submit" name="convert" class="btn btn-secondary">Convert</button>
-        <br />
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">ROM address</th>
-                    <th scope="col">Instruction</th>
-                    <th>Hexadecimal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for addr, instr in instrbytecode.items() %}
-                <tr>
-                    <th scope="row">{{addr | upper | replace("X", "x")}}</th>
-                    <td>{{instr}}</td>
-                    <td>{{ '0x{0:08X}'.format(instr | int(base=2)) }}</td>
-                    <!-- https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.int -->
-                    <!-- https://www.rapidtables.com/convert/number/binary-to-hex.html -->
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        
+        <br>
 
-        {% if bytecode != "" %}
-        <button type="submit" name="run" class="btn btn-secondary">Run Code</button>
-        {% endif %}
+        <div class="row">
+                <div class="col p-3 bg-info text-dark my-custom-scrollbar">
+                    <label for="Register"><strong><h3>Register-area</h3></strong></label>
+                    <table class="table table-striped table-fixed">
+                        <thead class="thead-dark" style="position: sticky; top:0">
+                                <tr>
+                                    <th scope="col">Register</th>
+                                    <th scope="col">Value</th>
+                                    <th>Hexadecimal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if reg_and_ram %}
+                                {% for reg, val in reg_and_ram["register"].items() %}
+                                <tr>
+                                    {% if val != 0  %}
+                                    <th style="color:rgb(158, 36, 220);">{{ reg }}</th>
+                                    <th style="color:rgb(158, 36, 220);" scope="row" >{{val}}</th>
+                                    <td style="color:rgb(158, 36, 220);">{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                    {% else %}
+                                    <th>{{ reg }}</th>
+                                    <th scope="row" >{{val}}</th>
+                                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                                {% endif %}
 
-        {% if reg_and_ram %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Register</th>
-                    <th scope="col">Value</th>
-                    <th>Hexadecimal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reg, val in reg_and_ram["register"].items() %}
-                <tr>
-                    <th scope="row">{{reg}}</th>
-                    <th>{{val}}</th>
-                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Ram address</th>
-                    <th scope="col">Value</th>
-                    <th>Hexadecimal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reg, val in reg_and_ram["ram"].items() %}
-                <tr>
-                    <th scope="row">{{reg}}</th>
-                    <th>{{val}}</th>
-                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
+                                {% if reg_and_ram2 and switch != False %}
+                                {% for reg, val in reg_and_ram2["register"].items() %}
+                                <tr>
+                                    <th>{{ reg }}</th>
+                                    <th scope="row" >{{val}}</th>
+                                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% endif %}
+                            </tbody>
+                    </table>
+                </div>
+                
 
+                <div class="col p-3 bg-info text-dark my-custom-scrollbar">
+                    <label for="RAM"><h3>RAM-area</h3></label>
+                    <table class="table table-striped table-fixed">
+                        <thead class="thead-dark" style="position: sticky; top:0">
+                            <tr>
+                                <th scope="col">Ram address</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Hexadecimal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if reg_and_ram %}
+                            {% for reg, val in reg_and_ram["ram"].items() %}
+                            <tr>
+                                <th scope="row">{{ '0x{0:08X}'.format(reg | int(base=2)) }}</th>
+                                <th>{{val}}</th>
+                                <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% for warning in reg_and_ram["warnings"] %}
+                <p style="color:red;"> {{warning}}</p>
+                {% endfor %}
+
+            </div>
+            <br>
     </form>
+
 </div>
 {% endblock %}

@@ -37,7 +37,7 @@ architecture behavioral of register_file32 is
           registers(to_integer(unsigned(I_rd2))) <= I_data_input2;  -- Write
         end if;
 
-        if I_nWE = '0' and (sel_opcode = OP_REG or sel_opcode = OP_IMM) then
+        if I_nWE = '0' and (sel_opcode = OP_REG or sel_opcode = OP_IMM or sel_opcode = OP_BRANCH) then
           registers(to_integer(unsigned(I_rd))) <= I_data_input;
         end if;
 

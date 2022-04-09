@@ -335,10 +335,8 @@ architecture behavioral of riscy is
             nWE_X_R <= nWE_D_R2;
 
         end if;
-    end process ;
+    end process;
 
-
-    -- TODO
     pipleinestage_EX_MEM : process(sel_opcode_signal_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
     begin
 
@@ -353,7 +351,7 @@ architecture behavioral of riscy is
 
         -- logic for forwarding/bypassing
         if rising_edge(clk) then
-
+            -- Store
             if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
                 Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
                 nWE_WB_R <= nWE_X_R;
@@ -361,7 +359,6 @@ architecture behavioral of riscy is
                 sel_opcode_signal_M <= sel_opcode_signal_X;
                 dnWE <= nWE_X_RAM;
             else
-                -- Store
                 dAddr <= alu_out_X; -- rs1+im
                 dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
                 dnWE <= nWE_X_RAM; -- out to the DataMEM (external) dnWE is "out" signal
@@ -372,7 +369,6 @@ architecture behavioral of riscy is
                 alu_out_M <= alu_out_X;
             end if;
         end if;
-
     end process;
 
     pipleinestage_MEM_WB : process(sel_opcode_signal_M, dDataO, alu_out_M, rd_signal_M, nWE_M_R, clk) 

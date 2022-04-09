@@ -13,7 +13,7 @@ use work.sramPkg.all;					--   sram2
 ------------------------------------------------------------------------------
 entity procTst is
 generic(clkPeriod	: time		:= 20 ns;	-- clock period
-	clkCycles	: positive	:= 500);		-- clock cycles
+	clkCycles	: positive	:= 1000);		-- clock cycles
 end entity procTst;
 
 
@@ -29,8 +29,9 @@ architecture testbench of procTst is
   signal iCtrl, dCtrl : fileIOty;
 
   component sram2 is
-    generic (	addrWd	: integer range 2 to 16	:= 8;	-- #address bits
-        dataWd	: integer range 2 to 32	:= 32;	-- #data    bits
+    generic (	
+        addrWd	: integer range 2 to 16	:= 8;	-- #address bits
+        dataWd	: integer range 2 to 32	:= 32;	-- #data bits
         fileId	: string		:= "sram.dat"); -- filename
     port (		nCS	: in    std_logic;		-- not Chip Select
               nWE	: in    std_logic;		-- not Write Enable
@@ -75,7 +76,7 @@ begin
           addrWd	=> 8, -- vielleicht 32bit, aber 2**32 zellen zu viel?
 					dataWd	=> 32,
 					fileID	=> "sramSim/dataMem.dat")
-			port map    (	
+			port map (	
           nCS	=> const0,
 					nWE	=> dnWE,
 					addr	=> dAddr(7 downto 0), -- 256x32 fuer die Befehle (dataAddress)

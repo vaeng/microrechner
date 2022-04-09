@@ -3,10 +3,47 @@ from sqlite3 import register_adapter
 from assembler.instruction import Instruction
 
 
+valid_registers = [
+            "zero",  # Hard-wired zero
+            "ra",  # Return address
+            "sp",  # Stack pointer
+            "gp",  # Global pointer
+            "tp",  # Thread pointer
+            "t0",  # Temporary link register
+            "t1",  # Temporaries
+            "t2",  # Temporaries
+            "s0",  # Saved register/frame pointer
+            "fp",  # Saved register/frame pointer
+            "s1",  # Saved register
+            "a0",  # Function arguments/return values
+            "a1",
+            "a2",  # Function arguments
+            "a3",
+            "a4",
+            "a5",
+            "a6",
+            "a7",
+            "s2",  # Saved registers
+            "s3",
+            "s4",
+            "s5",
+            "s6",
+            "s7",
+            "s8",
+            "s9",
+            "s10",
+            "s11",
+            "t3",  # Temporaries
+            "t4",
+            "t5",
+            "t6"
+        ]
+
+
 def instructions2bytecode(input_text_array):
 
     outputlines = {}
-    instructions = []  # store each instruction memory
+    instructions = []  # store each instruction memory object
     ram_position = 0  # for the pc
     label_position = {}
     for line in input_text_array:
@@ -27,15 +64,14 @@ def instructions2bytecode(input_text_array):
         label = instruction.label
         if label is not None:
             instruction.set_address(label_position[label])
-        outputlines[str(hex(instruction.ram_position))
-                    ] = instruction.get_byte_code()
+        outputlines[str(hex(instruction.ram_position))] = instruction.get_byte_code()
     return outputlines
 
 
 def instructions2rom(input_text_array):
     machine_state = {}
     rom = {}
-    instructions = []  # store each instruction memory
+    instructions = []  # store each instruction memory object
     ram_position = 0  # for the pc
     label_position = {}
     for line in input_text_array:
@@ -55,65 +91,35 @@ def instructions2rom(input_text_array):
     for instruction in instructions:
         label = instruction.label
         if label is not None:
-            instruction.set_address(label_position[label])
+            instruction.set_address(label_position[label]) # label taggen zur ziel addresse e.g. beq r1, r2, dest_label
         rom[instruction.ram_position] = instruction
     machine_state["rom"] = rom
     machine_state["label"] = label_position
-    return machine_state
+    return machine_state # dict
 
 
 def runInstructions(input_text_array, instruction_limit):
     machine_state = {}
-    # initialize register to zeroes
-    register = {
-        "zero": 0,  # Hard-wired zero
-        "ra": 0,  # Return address
-        "sp": 0,  # Stack pointer
-        "gp": 0,  # Global pointer
-        "tp": 0,  # Thread pointer
-        "t0": 0,  # Temporary link register
-        "t1": 0,  # Temporaries
-        "t2": 0,  # Temporaries
-        "s0": 0,  # Saved register/frame pointer
-        "fp": 0,  # Saved register/frame pointer
-        "s1": 0,  # Saved register
-        "a0": 0,  # Function arguments/return values
-        "a1": 0,
-        "a2": 0,  # Function arguments
-        "a3": 0,
-        "a4": 0,
-        "a5": 0,
-        "a6": 0,
-        "a7": 0,
-        "s2": 0,  # Saved registers
-        "s3": 0,
-        "s4": 0,
-        "s5": 0,
-        "s6": 0,
-        "s7": 0,
-        "s8": 0,
-        "s9": 0,
-        "s10": 0,
-        "s11": 0,
-        "t3": 0,  # Temporaries
-        "t4": 0,
-        "t5": 0,
-        "t6": 0,
-    }
+    register = {} # initialize register to zeroes
+
+    for i in valid_registers:
+        register[i] = 0
+
     # empy ram:
     ram = {}
     machine_state = instructions2rom(input_text_array)
     machine_state["register"] = register
     machine_state["ram"] = ram
-    machine_state["pc"] = 0
+    machine_state["pc"] = 0 # nochmal ueberdenken ob == 0, da ROM und RAM bereiche im speicher sind (somit eigentlich adddress(rom)<adddress(ram))
 
     for _ in range(instruction_limit):
         pc = machine_state["pc"]
         # no more instructions, halt sets pc to -1. thus breaking this loop
         if pc not in machine_state["rom"].keys():
             break
-        machine_state["rom"][pc].execute_command(machine_state)
-        # instruction has not changed pc
+        machine_state["rom"][pc].execute_command(machine_state) # here "instruction" object method invoke
+
+        # instruction has not changed pc, because the order of execution for every instruction is everytime e.g. addi rd, rs1, imm: rd←rs1+immi, pc←pc+4 (pc is incremented after the "end")
         if machine_state["pc"] == pc:
             machine_state["pc"] += 4
 

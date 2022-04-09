@@ -4,6 +4,8 @@ from atexit import register
 import re
 from bitstring import Bits
 
+
+
 # Instruction field definitions.
 # RV32I opcode definitions:
 OP_JAL = "1101111"
@@ -45,7 +47,6 @@ class Instruction:
     def set_address(self, address):
         self.address = address
 
-    
     def transform_immb_to_bytecode(self, label_address):
         imm_b = label_address - self.ram_position
         print("he", label_address, self.ram_position, imm_b)
@@ -223,7 +224,91 @@ class Instruction:
 
         return assCode
 
-    
+    def checkImm(self, imm, type, signed):
+        if type == "i":  # 31-20 : 12
+            exp = 12
+        elif type in ["u", "j"]:  # 31-12 : 20
+            exp = 20
+        elif type == "b":  # 31-25 + 11-7 : 22
+            exp = 22
+        elif type == "s":
+            raise Exception(f"s-type not implemented.\n")
+        else:
+            raise Exception("Imm type unknown.\n")
+        if signed:
+            min = -2**(exp - 1)
+            max = 2**(exp-1)-1
+        else:
+            min = 0
+            max = 2**exp - 1
+        if imm <= max and imm >= min:
+            return imm
+        else:
+            raise Exception(
+                f"{self.line}: imm must be in inclusive interval of {min} and {max}\n")
+
+    def checkRegister(self, machine_state, reg):
+        valid_registers = [
+            "zero",  # Hard-wired zero
+            "ra",  # Return address
+            "sp",  # Stack pointer
+            "gp",  # Global pointer
+            "tp",  # Thread pointer
+            "t0",  # Temporary link register
+            "t1",  # Temporaries
+            "t2",  # Temporaries
+            "s0",  # Saved register/frame pointer
+            "fp",  # Saved register/frame pointer
+            "s1",  # Saved register
+            "a0",  # Function arguments/return values
+            "a1",
+            "a2",  # Function arguments
+            "a3",
+            "a4",
+            "a5",
+            "a6",
+            "a7",
+            "s2",  # Saved registers
+            "s3",
+            "s4",
+            "s5",
+            "s6",
+            "s7",
+            "s8",
+            "s9",
+            "s10",
+            "s11",
+            "t3",  # Temporaries
+            "t4",
+            "t5",
+            "t6"
+        ]
+        if reg not in valid_registers:
+            raise Exception("Unknown register: {reg}.\n")
+        return reg
+
+    def returnRegister(self, machine_state, reg):
+        self.checkRegister(machine_state, reg)
+        if reg not in machine_state["register"].keys(): # villeicht doppelt gemoppelt, da schon alles mit 0 init ist
+            reg_entry = 0
+        else:
+            reg_entry = machine_state["register"][reg]
+        return reg_entry
+
+    def addWarning(self, machine_state, msg):
+        machine_state["warnings"].append(msg)
+        return
+
+    def checkBounds(self, machine_state, result):
+        upper_bound = 2**31 - 1
+        lower_bound = - 2**31
+        if result > upper_bound:
+            self.addWarning(machine_state, "Overflow for: {self.line}")
+            return result - upper_bound + lower_bound - 1
+        if result < lower_bound:
+            self.addWarning(machine_state, "Underflow for: {self.line}")
+            return upper_bound - (result - lower_bound)
+
     def execute_command(self, machine_state):
         # machine state has several entries:
         # dictionaries: ram, register, labels and rom
@@ -231,19 +316,78 @@ class Instruction:
 
         instr, *arguments = re.split(',? |\(|\)+', self.line)
 
+        # r type instructions:
+        if instr in ["add", "and", "or", "sll", "slt", "sltu", "sra", "srl", "sub", "xor"]:
+            rd = self.checkRegister(machine_state, arguments[0])
+            rs1 = self.returnRegister(machine_state, arguments[1])
+            rs2 = self.returnRegister(machine_state, arguments[2])
+            #     ADD, SUB: addition of rs1 and rs2; rd = rs1 + rs2; ADD rd rs1 rs2
+            if instr == "add":
+                result = self.checkBounds(machine_state, rs1 + rs2)
+            elif instr == "sub":
+                result = self.checkBounds(machine_state, rs1 - rs2)
+        #     AND, OR, XOR (perform bitwise logical)
+            elif instr in ["and", "or", "xor"]:
+                b_rs1 = self.int2bin(rs1, 32)
+                b_rs2 = self.int2bin(rs2, 32)
+                b_result = ""
+                for i in range(0, 32):
+                    pos = "0"
+                    if instr == "and" and b_rs1[i] == "1" and b_rs2[i] == "1":
+                        pos = "1"
+                    elif instr == "or" and (b_rs1[i] == "1" or b_rs2[i] == "1"):
+                        pos = "1"
+                    elif instr == "xor" and \
+                        ((b_rs1[i] == "1" and b_rs2[i] == "0") or
+                         (b_rs1[i] == "0" and b_rs2[i] == "1")):
+                        pos = "1"
+                    b_result += pos
+                result = int(b_result[1:], 2)
+                if b_result[0] == "1":
+                    result += -2**31
+            #     SLT, SLTU (signed, unsigned compares respectively): rd ? if rs1 < rs2 : 0;
+            elif instr == "slt":
+                if rs1 < rs2:
+                    result = 1
+                else:
+                    result = 0
+            elif instr == "sltu":
+                if rs1 < 0:
+                    rs1 += 2**31
+                if rs2 < 0:
+                    rs2 += 2**31
+                if rs1 < rs2:
+                    result = 1
+                else:
+                    result = 0
+            #     SLL, SRL, SRA (logical left, logical right, arithmetic right shifts): value in "rs1 shift rs2"
+            elif instr in ["sll", "sra", "srl"]:
+                raise Exception("{instr} not yet implemented.\n")
+
+            machine_state["register"][rd] = result
+
 
 #     Integer Register-Immediate Instructions:
 
 #     ADDI (Add imidiate): sign-extended 12-bit immediate to register rs1 (ADDI rd, rs1, 0)
-        if instr == "addi":
+        elif instr == "addi":
+            target = self.checkRegister(machine_state, arguments[0])
+            source = self.returnRegister(machine_state, arguments[1])
+            if arguments[1] not in machine_state["register"].keys():
+                source = 0
+            else:
+                source = machine_state["register"][arguments[1]]
+            imm = self.checkImm(int(arguments[2]), "i", signed=True)
+            machine_state["register"][target] = source + imm
+#     SLTI (set less than immediate): "rd ? if rs1 < signextended immediate : 0;"
+        elif instr == "slti":
             target = arguments[0]
             if arguments[1] not in machine_state["register"].keys():
                 source = 0
             else:
                 source = machine_state["register"][arguments[1]]
-            imm = arguments[2]
-            machine_state["register"][target] = source + int(imm)
-#     SLTI (set less than immediate): "rd ? if rs1 < signextended immediate : 0;"
+            imm = self.checkImm(int(arguments[2]), "i", signed=True)
+            machine_state["register"][target] = source + imm
 #     ANDI, ORI, XORI (logical operations): perform bitwise OP := AND, OR, XOR; "rd = rs1 OP sign-extended 12-bit immediate"
 #     SRLI (logical right shift): zeros are shifted into the upper bits
 #     SRAI (arithmetic right shift): the original sign bit is copied into the vacated upper bits
@@ -253,24 +397,7 @@ class Instruction:
 
 # Integer Register-Register Operations:
 
-#     ADD, SUB: addition of rs1 and rs2; rd = rs1 + rs2; ADD rd rs1 rs2
-        elif instr in ["add", "sub"]:
-            if arguments[1] not in machine_state["register"].keys():
-                source1 = 0
-            else:
-                source1 = machine_state["register"][arguments[1]]
 
-            if arguments[2] not in machine_state["register"].keys():
-                source2 = 0
-            else:
-                source2 = machine_state["register"][arguments[2]]
-            if instr == "add":
-                machine_state["register"][arguments[0]] = source1 + source2
-            if instr == "sub":
-                machine_state["register"][arguments[0]] = source1 - source2
-#     SLT, SLTU (signed, unsigned compares respectively): rd ? if rs1 < rs2 : 0;
-#     AND, OR, XOR (perform bitwise logical)
-#     SLL, SRL, SRA (logical left, logical right, arithmetic right shifts): value in "rs1 shift rs2"
 #     NOP (Instruction) := ADDI x0, x0, 0 --> NOP for Pipeline "Bubbles"
         elif instr == "nop":
             pass
@@ -286,7 +413,7 @@ class Instruction:
                 jump = machine_state["label"][arguments[1]]
 
             machine_state["register"][arguments[0]] = machine_state["pc"] + 4
-            machine_state["pc"] += jump
+            machine_state["pc"] = jump
 
 #     JALR (indirect jump instruction): see Implementation details in spec S.21
 
