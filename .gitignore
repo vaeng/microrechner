@@ -7,3 +7,4 @@ website/bin/
 **/.DS_Store
 bin/
 lib/
+.DS_Store
