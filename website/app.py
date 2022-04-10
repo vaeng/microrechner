@@ -12,6 +12,14 @@ app = Flask(__name__)
 
 # for the coloring of the text (pointer)
 pointer_counter = -1 # -1 because of the request (we have to change the value)
+bytecode = {}
+machine_state = {}
+
+machine_state_init = {}
+register = {}
+ram = {}
+machine_state_init["register"] = register
+machine_state_init["ram"] = ram
 
 # A welcome message to test our server
 @app.route('/')
@@ -20,15 +28,11 @@ def index():
 
 @app.route('/demo', methods=['GET', 'POST'])
 def empty_form():
-    instructions = request.form.get('Instructions')
-    bytecode = {}
-    machine_state = {}
+    global bytecode
+    global machine_state
+    codeline = ""
 
-    machine_state_init = {}
-    register = {}
-    ram = {}
-    machine_state_init["register"] = register
-    machine_state_init["ram"] = ram
+    instructions = request.form.get('Instructions')
     lines = None
 
     switch = False # on off for demo.html for coloring
@@ -51,26 +55,34 @@ def empty_form():
         except Exception as e:
             bytecode = {}
             bytecode["error"] = str(e)
+
+
+    print(request.form.keys())
             
     if "step" in request.form.keys():
-        print("hello")
         global pointer_counter
+        pointer_counter += 1
         lines = instructions.splitlines()
         codeline = lines[pointer_counter]
-        pointer_counter += 1
 
-        machine_state = runInstructions([codeline], 1000)
+        machine_state = runInstructions([codeline], 1000, machine_state)
+        print(machine_state)
 
         pass # todo
 
     if "stop" in request.form.keys():
-        pointer_counter = 0
         pass # todo
 
-    
-    return render_template("demo.html", instructions=instructions, bytecode=bytecode, reg_and_ram=machine_state, reg_and_ram2=machine_state_init, switch=switch, lines = lines)
+    if "clear_state" in request.form.keys():
+        pointer_counter = -1
+        machine_state = {}
+        pass # todo
+
+    print(codeline)
+
+    return render_template("demo.html", instructions=instructions, bytecode=bytecode, reg_and_ram=machine_state, reg_and_ram2=machine_state_init, switch=switch, codeline = codeline)
 
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, port=5001)
+    app.run(threaded=True, port=5000, debug=True)

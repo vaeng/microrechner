@@ -39,6 +39,11 @@ valid_registers = [
             "t6"
         ]
 
+machine_state = {}
+register = {}
+ram_position = 0  # for the pc
+for i in valid_registers:
+        register[i] = 0
 
 def instructions2bytecode(input_text_array):
 
@@ -68,16 +73,25 @@ def instructions2bytecode(input_text_array):
     return outputlines
 
 
-def instructions2rom(input_text_array):
-    machine_state = {}
+def instructions2rom(input_text_array, machine_state_={}):
+    global machine_state
+    global ram_position
+
+    
+    if len(machine_state_) != 0:
+        machine_state_ = machine_state
+    else:
+        machine_state_ = {}
+    
+
     rom = {}
     instructions = []  # store each instruction memory object
-    ram_position = 0  # for the pc
     label_position = {}
     for line in input_text_array:
         assCode = ""
         line = line.strip()
         if ":" in line:
+            print("line", line)
             label_position[line.replace(':', '')] = ram_position
             continue
         elif line == "":
@@ -93,34 +107,47 @@ def instructions2rom(input_text_array):
         if label is not None:
             instruction.set_address(label_position[label]) # label taggen zur ziel addresse e.g. beq r1, r2, dest_label
         rom[instruction.ram_position] = instruction
-    machine_state["rom"] = rom
-    machine_state["label"] = label_position
-    return machine_state # dict
+    machine_state_["rom"] = rom
+    machine_state_["label"] = label_position
+    return machine_state_ # dict
 
 
-def runInstructions(input_text_array, instruction_limit):
-    machine_state = {}
-    register = {} # initialize register to zeroes
+def runInstructions(input_text_array, instruction_limit, machine_state_={}):
+    switch = None
+    global register
+    global machine_state
 
-    for i in valid_registers:
-        register[i] = 0
+    
+    if len(machine_state_) != 0:
+        machine_state_ = machine_state
+        switch = False
+    else:
+        machine_state_ = {}
+        switch = True
+    
+
+
+    if switch == True:
+        register = {} # initialize register to zeroes
+        for i in valid_registers:
+            register[i] = 0
 
     # empy ram:
     ram = {}
-    machine_state = instructions2rom(input_text_array)
-    machine_state["register"] = register
-    machine_state["ram"] = ram
-    machine_state["pc"] = 0 # nochmal ueberdenken ob == 0, da ROM und RAM bereiche im speicher sind (somit eigentlich adddress(rom)<adddress(ram))
+    machine_state_ = instructions2rom(input_text_array, machine_state_)
+    machine_state_["register"] = register
+    machine_state_["ram"] = ram
+    machine_state_["pc"] = 0 # nochmal ueberdenken ob == 0, da ROM und RAM bereiche im speicher sind (somit eigentlich adddress(rom)<adddress(ram))
 
     for _ in range(instruction_limit):
-        pc = machine_state["pc"]
+        pc = machine_state_["pc"]
         # no more instructions, halt sets pc to -1. thus breaking this loop
-        if pc not in machine_state["rom"].keys():
+        if pc not in machine_state_["rom"].keys():
             break
-        machine_state["rom"][pc].execute_command(machine_state) # here "instruction" object method invoke
+        machine_state_["rom"][pc].execute_command(machine_state_) # here "instruction" object method invoke
 
         # instruction has not changed pc, because the order of execution for every instruction is everytime e.g. addi rd, rs1, imm: rd←rs1+immi, pc←pc+4 (pc is incremented after the "end")
-        if machine_state["pc"] == pc:
-            machine_state["pc"] += 4
+        if machine_state_["pc"] == pc:
+            machine_state_["pc"] += 4
 
-    return machine_state
+    return machine_state_

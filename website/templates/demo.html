@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block header%} Simulator {% endblock %}
+{% block header%} <span style="color: white;">Simulator</span> {% endblock %}
 {% block content %}
 <br />
 <div class="container-fluid mt-3" style="height: 300px;
@@ -16,14 +16,15 @@ position: relative;">
             <div class="col p-3 bg-primary text-white">
                 <label for="instructions"><strong><h3>Instructions-CodeArea</h3></strong></label>
 
-                <textarea class="form-control" id="instructions" name="Instructions" rows="15" 
+  
+                <textarea class="form-control line-nums" id="instructions" name="Instructions" rows="15" 
                     px" placeholder="Fill with RISC-V code" style="background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
                     background-size: 100% 4rem;
                     border: 1px solid #CCC;
                     width: 100%;
                     height: 300px;
                     line-height: 2rem;
-                    margin: 0 auto;">{{instructions}}</textarea>
+                    margin: 0 auto;">{% if instructions %}{{instructions}}{% endif %}</textarea>
 
 
                 <button type="submit" class="btn btn-labeled btn-success" name="compile">
@@ -38,6 +39,8 @@ position: relative;">
                                 <span class="btn-label"><i class="fa fa-paw" aria-hidden="true"></i></span> | Step</button>
                                 <button type="submit" class="btn btn-labeled btn-success" name="stop">
                                     <span class="btn-label"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></span> | Stop</button>
+                                    <button type="submit" class="btn btn-labeled btn-success" name="clear_state">
+                                        <span class="btn-label"><i class="fa fa-shower" aria-hidden="true"></i></span> | Clear state</button>
                     </nav>
                 </div>
                 {% endif %}
@@ -45,7 +48,7 @@ position: relative;">
             </div>
             
             <div class="col p-3 bg-info text-dark my-custom-scrollbar">
-                <label for="ROM"><strong><h3>ROM-area</h3></strong></label>
+                <label for="ROM"><strong><h3 style="color: white;">ROM-area</h3></strong></label>
                 <table class="table table-striped table-fixed">
                     <thead class="thead-dark" style="position: sticky; top:0">
                         <tr>
@@ -68,12 +71,12 @@ position: relative;">
                 </table>    
              </div>
         </div>
-        
+
         <br>
 
         <div class="row">
                 <div class="col p-3 bg-info text-dark my-custom-scrollbar">
-                    <label for="Register"><strong><h3>Register-area</h3></strong></label>
+                    <label for="Register"><strong><h3 style="color: white;">Register-area</h3></strong></label>
                     <table class="table table-striped table-fixed">
                         <thead class="thead-dark" style="position: sticky; top:0">
                                 <tr>
@@ -114,7 +117,7 @@ position: relative;">
                 
 
                 <div class="col p-3 bg-info text-dark my-custom-scrollbar">
-                    <label for="RAM"><h3>RAM-area</h3></label>
+                    <label for="RAM"><h3 style="color: white;">RAM-area</h3></label>
                     <table class="table table-striped table-fixed">
                         <thead class="thead-dark" style="position: sticky; top:0">
                             <tr>
