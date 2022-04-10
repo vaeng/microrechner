@@ -41,7 +41,6 @@ valid_registers = [
 
 machine_state = {}
 register = {}
-ram_position = 0  # for the pc
 for i in valid_registers:
         register[i] = 0
 
@@ -75,7 +74,6 @@ def instructions2bytecode(input_text_array):
 
 def instructions2rom(input_text_array, machine_state_={}):
     global machine_state
-    global ram_position
 
     
     if len(machine_state_) != 0:
@@ -86,6 +84,7 @@ def instructions2rom(input_text_array, machine_state_={}):
 
     rom = {}
     instructions = []  # store each instruction memory object
+    ram_position = 0  # for the pc
     label_position = {}
     for line in input_text_array:
         assCode = ""
