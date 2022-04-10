@@ -8,3 +8,4 @@ website/bin/
 bin/
 lib/
 .DS_Store
+*.cfg
