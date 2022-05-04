@@ -10,4 +10,3 @@ save:
     sw s2, 0(a1)
     beq zero, zero, ra
 loop:
-

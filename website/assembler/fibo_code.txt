@@ -1,0 +1,19 @@
+init:
+    addi s4, zero, 20 # set limit for fibo
+    addi a1, zero, 0  # set counter
+    addi s2, zero, 0  # set f_0
+    sw s2, 0(a1)
+    addi a1, a1, 1
+    addi s3 zero, 1   # set f_1
+    sw s3, 0(a1)
+    addi a1, a1, 1
+loop:
+    add s2, s2, s3
+    sw s2, 0(a1)
+    beq a1, s4, end
+    addi a1, a1, 1
+    add s3, s2, s3
+    sw s3, 0(a1)
+    addi a1, a1, 1
+    bne a1, s4 loop
+end:

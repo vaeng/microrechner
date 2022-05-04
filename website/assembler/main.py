@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""This python code is for the CPU Core Riscy, hence it has little things to consider:
+    - it translates the assembly code in a optimized way for the CPU (include nops for hazard handling)
+    - it differs from the helpers.py code in the way, that it doesnt include nops for hazard handling
+    - its translation depends on underlying HW Architecture (CPU Riscy); does not consider for WebApp translation (maybe in future time)
+"""
+
 import argparse  # https://docs.python.org/3/library/argparse.html
 import re # https://docs.python.org/3/library/re.html
 from instruction import Instruction
@@ -55,6 +61,7 @@ def main():
                 line = line.strip()
                 if ":" in line:
                     label_position[line.replace(':', '')] = ram_position
+                    print(label_position)
                     continue
                 elif line == "":
                     continue
@@ -64,14 +71,14 @@ def main():
 
                     index = whenHasWrittenToRegisterLast(inst.write_register)
 
-                    # TODO: Aktuell werden nur Register in die geschrieben wird betrachtet.
+                    # TODO Aktuell werden nur Register in die geschrieben wird betrachtet.
                     # Es muss aber auch bei Registern geprüft werden, wo nur lesend drauf zugegriffen wird.
-                    if inst.instruction in INSTRUCTIONS_CAUSING_HAZARDS:
-                        no_op_count = 3
+                    #if inst.instruction in INSTRUCTIONS_CAUSING_HAZARDS:
+                    #    no_op_count = 2
 
-                    if index != -1:
-                        print(line, index)
-                        no_op_count = index
+                    #if index != -1:
+                    #    print(line, index)
+                    #    no_op_count = index
 
                     # Überprüfen ob die Instruction zu einem Hazard führen könnte.
                     # Falls ja, füge drei NO_OP Instructions ein.
@@ -94,7 +101,6 @@ def main():
         label = instruction.label
         if label is not None:
             instruction.set_address(label_position[label])
-            print(instruction.address)
         outputlines.append("{:30s} {:32s}\n".format(
             str(hex(instruction.ram_position)), instruction.get_byte_code()))
 

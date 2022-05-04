@@ -26,6 +26,8 @@ class Instruction:
     def __init__(self, ram_pos, line):
         self.ram_position = ram_pos
         self.line = line
+
+        # only important for instructions with labels
         self.label = None
         self.address = None
 
@@ -48,6 +50,15 @@ class Instruction:
         self.address = address
 
     def transform_immb_to_bytecode(self, label_address):
+        """Translation of the imm_b number for the b-type bytecode. It has an extra function, because its structure is more complex.
+
+        Args:
+            label_address (str): is the address of of the label (located in self.address)
+
+        Returns:
+            tuple (self.int2bin): get the integer converted into the binary formated string for the bytecode structure
+        """
+        
         imm_b = label_address - self.ram_position
         print("he", label_address, self.ram_position, imm_b)
         imm_b4_1 = (imm_b & 0x1e) << 7
@@ -100,15 +111,32 @@ class Instruction:
 
     # int2bin takes an integer and returns a binary string of length binLength
     def int2bin(self, num, binLength):
+        """int2bin takes an integer and returns a binary string of length binLength
+
+        Args:
+            num (int): number to be converted
+            binLength (int): length of binary format
+
+        Returns:
+            bits(str): get the binary formated string of the converted number
+        """
         bits = None
-        if int(num) < 0:  # denn bsp mit 23 funktioniert es nicht
-            bits = Bits(int=int(num), length=binLength).bin
+        if int(num) < 0:  # da sonst denn bsp mit -23 funktioniert es nicht
+            bits = Bits(int=int(num), length=binLength).bin # zweier komplement
         else:
             bits = "{0:0" + str(binLength) + "b}"
             bits = bits.format(int(num))
         return bits
 
     def get_byte_code(self):
+        """Build the Bytecode of the assembly (here is the compilation of assembly to bytecode).
+
+        Raises:
+            Exception: unknown assembly
+
+        Returns:
+            assCode(str): this is the bytecode format of the assembly
+        """
         instr, *arguments = re.split(',? |\(|\)+', self.line)
 
         if instr == "lui":
@@ -118,8 +146,8 @@ class Instruction:
             assCode = self.int2bin(
                 arguments[1], 20) + self.get_register(arguments[0]) + OP_AUIPC
         elif instr == "jal":
-            assCode = self.int2bin((int(arguments[1]) & 0x100000) >> 20, 1) + self.int2bin((int(arguments[1]) & 0x7ff) >> 1, 10) + self.int2bin(
-                (int(arguments[1]) & 0x800) >> 11, 1) + self.int2bin((int(arguments[1]) & 0xff000) >> 12, 8) + self.get_register(arguments[0]) + OP_JAL
+            assCode = self.int2bin(((self.address - self.ram_position) & 0x100000) >> 20, 1) + self.int2bin(((self.address - self.ram_position) & 0x7ff) >> 1, 10) + self.int2bin(
+                ((self.address - self.ram_position) & 0x800) >> 11, 1) + self.int2bin(((self.address - self.ram_position) & 0xff000) >> 12, 8) + self.get_register(arguments[0]) + OP_JAL
         elif instr == "jalr":
             assCode = self.int2bin(arguments[2], 12) + self.get_register(
                 arguments[1]) + "000" + self.get_register(arguments[0]) + OP_JALR
@@ -220,11 +248,26 @@ class Instruction:
             assCode = self.int2bin(0, 12) + self.get_register(
                 arguments[1]) + "000" + self.get_register(arguments[0]) + OP_IMM
         else:  # Error for unknown codes
-            raise Exception(f"unknown operation: {instr}\n")
+            raise Exception(f"unknown assembly: {instr}\n")
 
         return assCode
 
     def checkImm(self, imm, type, signed):
+        """Check if immediate value is valid or not.
+
+        Args:
+            imm (int): immediate value
+            type (str): type of ISA Bytecode
+            signed (boolean): depends upon the specifiaction (is the immediate value signed or not)
+
+        Raises:
+            Exception: type not implemented
+            Exception: Imm type unknown
+            Exception: interval of immediate
+
+        Returns:
+            imm (int): immediate value
+        """
         if type == "i":  # 31-20 : 12
             exp = 12
         elif type in ["u", "j"]:  # 31-12 : 20
@@ -247,7 +290,19 @@ class Instruction:
             raise Exception(
                 f"{self.line}: imm must be in inclusive interval of {min} and {max}\n")
 
-    def checkRegister(self, machine_state, reg):
+    def checkRegister(self, reg):
+        """Does the speciefied register exists or not.
+
+        Args:
+            reg (str): specified register
+
+        Raises:
+            Exception: Unknown register
+
+        Returns:
+            reg (str): specified register
+        """
+
         valid_registers = [
             "zero",  # Hard-wired zero
             "ra",  # Return address
@@ -288,8 +343,14 @@ class Instruction:
         return reg
 
     def returnRegister(self, machine_state, reg):
+        """Like the name, it retunes the value of the named register (reg(string)).
+
+        Returns:
+            reg(int): value of specified register
+        """
+        
         self.checkRegister(machine_state, reg)
-        if reg not in machine_state["register"].keys(): # villeicht doppelt gemoppelt, da schon alles mit 0 init ist
+        if reg not in machine_state["register"].keys(): # vielleicht doppelt gemoppelt, da schon alles mit 0 init ist
             reg_entry = 0
         else:
             reg_entry = machine_state["register"][reg]
@@ -300,6 +361,15 @@ class Instruction:
         return
 
     def checkBounds(self, machine_state, result):
+        """Check arithmetic operation
+
+        Args:
+            machine_state (dict): the current state of the machine (registers, ram, rom)
+            result (int): the operation which is checked
+
+        Returns:
+            result (int): the operation which is checked
+        """
         upper_bound = 2**31 - 1
         lower_bound = - 2**31
         if result > upper_bound:
@@ -308,11 +378,17 @@ class Instruction:
         if result < lower_bound:
             self.addWarning(machine_state, "Underflow for: {self.line}")
             return upper_bound - (result - lower_bound)
+        return result # no warning needed
 
     def execute_command(self, machine_state):
-        # machine state has several entries:
-        # dictionaries: ram, register, labels and rom
-        # pc and instruction_count as int
+        """Logic behind the simulator. The manipulation of the machine_state happens here.
+        + machine state has several entries:
+            - dictionaries: ram, register, labels and rom
+            - pc and instruction_count as int
+
+        Raises:
+            Exception: Exception("{instr} not yet implemented")
+        """
 
         instr, *arguments = re.split(',? |\(|\)+', self.line)
 

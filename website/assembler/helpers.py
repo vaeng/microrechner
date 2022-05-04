@@ -41,8 +41,8 @@ valid_registers = [
 
 machine_state = {}
 register = {}
-for i in valid_registers:
-        register[i] = 0
+#for i in valid_registers:
+#        register[i] = 0
 
 def instructions2bytecode(input_text_array):
 
@@ -126,10 +126,10 @@ def runInstructions(input_text_array, instruction_limit, machine_state_={}):
     
 
 
-    if switch == True:
-        register = {} # initialize register to zeroes
-        for i in valid_registers:
-            register[i] = 0
+    #if switch == True:
+    #    register = {} # initialize register to zeroes
+    #    for i in valid_registers:
+    #        register[i] = 0
 
     # empy ram:
     ram = {}

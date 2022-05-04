@@ -78,11 +78,11 @@ def empty_form():
         machine_state = {}
         pass # todo
 
-    print(codeline)
+    print(codeline, bytecode)
 
     return render_template("demo.html", instructions=instructions, bytecode=bytecode, reg_and_ram=machine_state, reg_and_ram2=machine_state_init, switch=switch, codeline = codeline)
 
 
 if __name__ == '__main__':
     # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, port=5000, debug=True)
+    app.run(threaded=True, port=5001, debug=True)

@@ -1,1 +1,5 @@
-addi t0 t0 1267956794556734568345673456347564564534563456345723
+go:
+    addi zero zero 111
+    slli zero, zero, 2
+    srai zero, zero, 2
+    jal t0, go
