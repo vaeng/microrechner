@@ -1,0 +1,10 @@
+# ghdl		- 2.0.0-dev	- selber compiliert
+# gtkwave	- 3.3.86-1	- Ubuntu deb
+# ----------------------------------------------------------------------------
+ghdl -a -fsynopsys --workdir=work sram2.vhd
+ghdl -a -fsynopsys --workdir=work procPkg.vhd
+ghdl -a -fsynopsys --workdir=work pipeProc.vhd
+ghdl -a -fsynopsys --workdir=work procTest.vhd
+ghdl -e -fsynopsys --workdir=work procTest
+ghdl -r -fsynopsys --workdir=work procTest --vcd=procTest.vcd
+gtkwave procTest.vcd

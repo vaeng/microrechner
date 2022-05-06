@@ -1,0 +1,5 @@
+# Cadence Xcelium	21.03.009
+# ----------------------------------------------------------------------------
+xmvhdl -linedebug de0Board.vho de0Test.vhd
+xmelab de0Test
+xmsim -gui de0Test

@@ -1,0 +1,8 @@
+# Cadence Xcelium	21.03.009
+# ----------------------------------------------------------------------------
+xmvhdl -linedebug sram2.vhd
+xmvhdl -linedebug procPkg.vhd
+xmvhdl -linedebug pipeProc.vhd
+xmvhdl -linedebug procTest.vhd
+xmelab procTest
+xmsim -gui procTest

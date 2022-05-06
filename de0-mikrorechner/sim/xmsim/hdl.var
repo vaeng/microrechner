@@ -1,0 +1,5 @@
+INCLUDE $CDS_XCELIUM/tools/xcelium/files/hdl.var
+DEFINE WORK work
+DEFINE XMVHDLOPTS -v93
+DEFINE VERILOG_SUFFIX (.v, .vt, .vlg, .vo)
+DEFINE VHDL_SUFFIX (.vhd, .vht, .vhdl, .vho)

@@ -1,5 +1,1 @@
-go:
-    addi zero zero 111
-    slli zero, zero, 2
-    srai zero, zero, 2
-    jal t0, go
+addi s4, zero, 20

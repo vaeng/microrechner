@@ -1,0 +1,9 @@
+DEPTH = 1024;				-- # words
+WIDTH = 32;				-- # bits/word
+ADDRESS_RADIX = DEC;			-- address format
+DATA_RADIX = BIN;			-- data format
+CONTENT
+BEGIN
+0 : 00000000111111110000000011111111;	-- fill with data
+4 : 11111111000000001111111100000000;	-- ...not exhaustive
+END;

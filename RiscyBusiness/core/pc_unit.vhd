@@ -28,7 +28,7 @@ begin
             elsif mux_control_target = '1' then
                 current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input; WB or from not integer pc
             else 
-                current_pc <= std_logic_vector(unsigned(current_pc) + 4); -- increment (also should work for lw)
+                current_pc <= std_logic_vector(unsigned(current_pc) + 1); -- increment (also should work for lw)
             end if;
         end if;
         
