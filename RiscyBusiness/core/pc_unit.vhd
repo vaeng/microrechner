@@ -1,7 +1,6 @@
 library ieee;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
-
 use work.riscy_package.all;
 
 
@@ -23,12 +22,12 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            if nRSt = '0' then
+            if nRSt = '0' then -- because nRSt == 0 is false, it means RST else if True (== 1) then not Reset is the statement
                 current_pc <= x"00000000"; -- reset signal "low active"
             elsif mux_control_target = '1' then
                 current_pc <= std_logic_vector(unsigned(I_Addr)); -- from external input; WB or from not integer pc
             else 
-                current_pc <= std_logic_vector(unsigned(current_pc) + 1); -- increment (also should work for lw)
+                current_pc <= std_logic_vector(unsigned(current_pc) + 4); -- increment (also should work for lw)
             end if;
         end if;
         

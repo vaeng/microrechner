@@ -1,7 +1,6 @@
 library ieee;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
-
 use work.riscy_package.all;
 
 
@@ -49,10 +48,17 @@ begin
                         end if;
                         if alu_sel_f = F_SLL then alu_out <= std_logic_vector(signed(val_a) sll to_integer(unsigned(lower_bits))); end if;
                         if alu_sel_f = F_SRL then alu_out <= std_logic_vector(signed(val_a) srl to_integer(unsigned(lower_bits))); end if;
+                        if alu_sel_f = F_MULH then alu_out <= std_logic_vector(signed(val_a) * signed(val_b)); end if;
+                        if alu_sel_f = F_MULHU then alu_out <= std_logic_vector(unsigned(val_a) * unsigned(val_b)); end if;
+                        -- if alu_sel_f = F_MULHSU then alu_out <= std_logic_vector(signed(val_a) * unsigned(val_b)); end if;
+                        if alu_sel_f = F_DIV then assert to_integer(unsigned(val_b)) > 0 report "Division by zero"; alu_out <= std_logic_vector(signed(val_a) / signed(val_b)); end if;
+                        if alu_sel_f = F_DIVU then assert to_integer(unsigned(val_b)) > 0 report "Division by zero"; alu_out <= std_logic_vector(unsigned(val_a) / unsigned(val_b)); end if;
+                        if alu_sel_f = F_REM then assert to_integer(unsigned(val_b)) > 0 report "Division by zero"; alu_out <= std_logic_vector(signed(val_a) rem signed(val_b)); end if;
+                        if alu_sel_f = F_REMU then assert to_integer(unsigned(val_b)) > 0 report "Division by zero"; alu_out <= std_logic_vector(unsigned(val_a) rem unsigned(val_b)); end if;
                         
                     when "0100000" => -- operations "0100000" class
                         if alu_sel_f = F_SUB then alu_out <= std_logic_vector(signed(val_b) - signed(val_a)); end if;
-                        if alu_sel_f = F_SRA then alu_out <= std_logic_vector(signed(val_a) sra to_integer(unsigned(lower_bits))); end if;
+                        if alu_sel_f = F_SRA then alu_out <= std_logic_vector(signed(val_a) sra to_integer(unsigned(lower_bits))); end if;                    
                     
                     when others => alu_out <= x"00000000";
                         

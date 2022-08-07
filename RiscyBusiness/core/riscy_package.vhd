@@ -52,6 +52,14 @@ package riscy_package is
     constant F_SRA    : func_3 := "101"; --
     constant F_OR     : func_3 := "110"; --
     constant F_AND    : func_3 := "111"; --
+    constant F_MULH     : func_3 := "001"; -- mulitplication
+    constant F_MULHSU   : func_3 := "010"; --
+    constant F_MULHU   : func_3 := "011"; --
+    constant F_DIV : func_3 := "100";
+    constant F_DIVU : func_3 := "101";
+    constant F_REM : func_3 := "110";
+    constant F_REMU : func_3 := "111";
+
     
     -- RV32I "funct7" bits. Along with the "funct3" bits, these select
     -- different functions with R-type instructions.

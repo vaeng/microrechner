@@ -11,10 +11,8 @@ entity extender is
     imm_Itype : in std_logic_vector(11 downto 0);
 
     imm_Utype : in std_logic_vector(19 downto 0);
-    
     imm_Stype : in std_logic_vector(4 downto 0);
     imm_StypeTwo : in std_logic_vector(6 downto 0);
-
     imm_Btype : in std_logic;
     imm_BtypeTwo : in std_logic_vector(3 downto 0);
     imm_BtypeThree : in std_logic_vector(5 downto 0);

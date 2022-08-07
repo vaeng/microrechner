@@ -1,5 +1,5 @@
 library ieee;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
 
 use work.riscy_package.all;
@@ -17,8 +17,6 @@ entity riscy is
         dDataO: in std_logic_vector(31 downto 0) -- from WB stage
     ); 
 end;
-
-
 
 architecture behavioral of riscy is
     
@@ -310,7 +308,7 @@ architecture behavioral of riscy is
         iAddr <= O_Addr_F; -- to INS MEM
         if rising_edge(clk) then
             ins_mem_D <= iData; -- 32bit opcode
-            O_Addr_D <= O_Addr_F; -- to ALU ADDRESSER
+            O_Addr_D <= O_Addr_F; -- to ALU ADRESSER
         end if;
     end process ;
 
@@ -321,7 +319,7 @@ architecture behavioral of riscy is
             sel_opcode_signal_X <= sel_opcode_signal_D;
             rs1_out_X <= rs1_out_D;
             
-            if sel_opcode_signal_D = OP_STORE  or sel_opcode_signal_D = OP_LOAD or  sel_opcode_signal_D = OP_IMM then
+            if sel_opcode_signal_D = OP_STORE or sel_opcode_signal_D = OP_LOAD or sel_opcode_signal_D = OP_IMM then
                 rs2_out_X <= imm_O_D; -- for Store and Load 
                 rs2_out_X2 <= rs2_out_D; -- for store
             else
