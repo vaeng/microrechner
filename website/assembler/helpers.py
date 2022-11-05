@@ -1,6 +1,7 @@
 import argparse
 from sqlite3 import register_adapter
 from assembler.instruction import Instruction
+import copy
 
 
 valid_registers = [
@@ -75,13 +76,11 @@ def instructions2bytecode(input_text_array):
 def instructions2rom(input_text_array, machine_state_={}):
     global machine_state
 
+    # if len(machine_state_) != 0:
+    #     machine_state_ = machine_state
+    # else:
+    #     machine_state_ = {}
     
-    if len(machine_state_) != 0:
-        machine_state_ = machine_state
-    else:
-        machine_state_ = {}
-    
-
     rom = {}
     instructions = []  # store each instruction memory object
     ram_position = 0  # for the pc
@@ -111,42 +110,38 @@ def instructions2rom(input_text_array, machine_state_={}):
     return machine_state_ # dict
 
 
-def runInstructions(input_text_array, instruction_limit, machine_state_={}):
-    switch = None
-    global register
+def runInstructions(input_text_array, instruction_limit, machine_state_={}, step = False):
     global machine_state
-
     
-    if len(machine_state_) != 0:
-        machine_state_ = machine_state
-        switch = False
+    
+    if len(machine_state_) == 2:
+        machine_state = copy.deepcopy(machine_state_) # only register and ram is init
     else:
-        machine_state_ = {}
-        switch = True
+        machine_state = copy.deepcopy(machine_state_)
     
+    machine_state = instructions2rom(input_text_array, machine_state)
+    machine_state["pc"] = 0 # nochmal ueberdenken ob == 0, da ROM und RAM bereiche im speicher sind (somit eigentlich adddress(rom)<adddress(ram))
 
-
-    #if switch == True:
-    #    register = {} # initialize register to zeroes
-    #    for i in valid_registers:
-    #        register[i] = 0
-
-    # empy ram:
-    ram = {}
-    machine_state_ = instructions2rom(input_text_array, machine_state_)
-    machine_state_["register"] = register
-    machine_state_["ram"] = ram
-    machine_state_["pc"] = 0 # nochmal ueberdenken ob == 0, da ROM und RAM bereiche im speicher sind (somit eigentlich adddress(rom)<adddress(ram))
-
-    for _ in range(instruction_limit):
-        pc = machine_state_["pc"]
+    for i in range(instruction_limit):
+        pc = machine_state["pc"]
         # no more instructions, halt sets pc to -1. thus breaking this loop
-        if pc not in machine_state_["rom"].keys():
+        if pc not in machine_state["rom"].keys():
             break
-        machine_state_["rom"][pc].execute_command(machine_state_) # here "instruction" object method invoke
+        machine_state["rom"][pc].execute_command(machine_state) # here "instruction" object method invoke
+        
+        if step != False:
+            # store each state of the machine (the process of the machine)
+            machine_state["meta"][i] = without_keys(copy.deepcopy(machine_state), {"meta"})
 
         # instruction has not changed pc, because the order of execution for every instruction is everytime e.g. addi rd, rs1, imm: rd←rs1+immi, pc←pc+4 (pc is incremented after the "end")
-        if machine_state_["pc"] == pc:
-            machine_state_["pc"] += 4
+        if machine_state["pc"] == pc:
+            machine_state["pc"] += 4
 
-    return machine_state_
+    return machine_state
+
+
+"""remove keys of a dict
+"""
+def without_keys(d, keys):
+    return {x: d[x] for x in d if x not in keys}
+

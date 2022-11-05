@@ -1,0 +1,8 @@
+{
+    'register': {'zero': 0, 'ra': 0, ...}, 
+    'ram': {0: 0, 1: 1, 2: 1, 3: 2, ...}, 
+    'meta': {}, 
+    'rom': {0: <assembler.instruction.Instruction object at 0x108730c10>, ...}, 
+    'label': {'init': 0, 'loop': 48, 'end': 104}, 
+    'pc': 104
+} 

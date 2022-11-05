@@ -55,7 +55,7 @@ begin
       Stype_extender := (others => random4);
       Btype_extender := (others => random5);
 
-      case( sel_opcode) is
+      case(sel_opcode) is
       
         when OP_IMM | OP_JALR | OP_LOAD =>
           imm_O <= Itype_extender & imm_Itype;

@@ -64,7 +64,7 @@ begin
   instMemI: sram2	generic map(
           addrWd	=> 8,
 					dataWd	=> 32,
-					fileID	=> "sramSim/fib.dat")
+					fileID	=> "sramSim/fib2.dat")
 			port map    (	
           nCS	=> const0,
 					nWE	=> const1,

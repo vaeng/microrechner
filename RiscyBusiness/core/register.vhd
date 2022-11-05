@@ -10,14 +10,18 @@ port(
     I_rs2: in std_logic_vector(4 downto 0); -- input
     I_rd: in std_logic_vector(4 downto 0); -- input
     I_rd2: in std_logic_vector(4 downto 0); -- input
+    I_rd3: in std_logic_vector(4 downto 0); -- input only for jump instruction logic
     I_data_input: in std_logic_vector(31 downto 0); -- data input from Alu
     I_data_input2: in std_logic_vector(31 downto 0); -- data input from D_RAM
+    I_data_input3: in std_logic_vector(31 downto 0); -- for jump instruction logic
     sel_opcode: in opcode;
-    sel_opcode_lw: in opcode;
+    sel_opcode2: in opcode;
+    sel_opcode3: in opcode;
     O_rs1_out: out std_logic_vector(31 downto 0); -- data output
     O_rs2_out: out std_logic_vector(31 downto 0); -- data output
     I_nWE   : in std_logic; -- for conroll, writeEnable == 0 write otherwise read or do nothing
-    I_nWE2 : in std_logic
+    I_nWE2 : in std_logic;
+    I_nWE3 : in std_logic -- for jump instruction only
   );
 end register_file32;
 
@@ -28,19 +32,23 @@ architecture behavioral of register_file32 is
     signal out_b : std_logic_vector(31 downto 0);
   begin
 
-    regFile: process (I_clk, I_rs1, I_rs2) is
+    regFile: process (I_clk, I_rs1, I_rs2, I_nWE, I_nWE2, I_nWE3) is
     begin
 
       if rising_edge(I_clk) then        
         
-        if I_nWE2 = '0' and sel_opcode_lw = OP_LOAD then
+        if I_nWE3 = '0' and (sel_opcode3 = OP_JAL or sel_opcode3 = OP_JALR) then -- for jump instruction logic
+          registers(to_integer(unsigned(I_rd3))) <= I_data_input3;
+        end if;
+
+        if I_nWE2 = '0' and sel_opcode2 = OP_LOAD then
           registers(to_integer(unsigned(I_rd2))) <= I_data_input2;  -- Write
         end if;
 
-        if I_nWE = '0' and (sel_opcode = OP_REG or sel_opcode = OP_IMM or sel_opcode = OP_BRANCH) then
+        if I_nWE = '0' and (sel_opcode = OP_REG or sel_opcode = OP_IMM) then
           registers(to_integer(unsigned(I_rd))) <= I_data_input;
         end if;
-
+        
       end if;
 
       -- read with no dependency

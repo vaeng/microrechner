@@ -26,14 +26,18 @@ architecture behavioral of riscy is
         I_rs2: in std_logic_vector(4 downto 0); -- input
         I_rd: in std_logic_vector(4 downto 0); -- input
         I_rd2: in std_logic_vector(4 downto 0); -- input
+        I_rd3: in std_logic_vector(4 downto 0); -- input only for jump instruction logic
         I_data_input: in std_logic_vector(31 downto 0); -- data input from the wb stage (ALUor from the mem(e.g. through a lw instrucution)
         I_data_input2: in std_logic_vector(31 downto 0);
+        I_data_input3: in std_logic_vector(31 downto 0); -- for jump instruction logic
         sel_opcode: in opcode;
-        sel_opcode_lw: in opcode;
+        sel_opcode2: in opcode;
+        sel_opcode3: in opcode;
         O_rs1_out: out std_logic_vector(31 downto 0); -- data output
         O_rs2_out: out std_logic_vector(31 downto 0); -- data output
         I_nWE   : in std_logic; -- for conroll, writeEnable == 0 write otherwise read or do nothing
-        I_nWE2   : in std_logic
+        I_nWE2   : in std_logic;
+        I_nWE3 : in std_logic -- for jump instruction only
         );
     end component register_file32;
 
@@ -121,6 +125,14 @@ architecture behavioral of riscy is
           );
     end component brancher_logic;
 
+    -- from fetch stage signals
+    signal ins_mem_D : std_logic_vector(31 downto 0); -- instruction fetched form the memory
+    signal O_Addr_D : std_logic_vector(31 downto 0); -- from PC.mux
+    signal O_Addr_D2 : std_logic_vector(31 downto 0); -- to PC.mux, we have to downcast 32 bits to 8 bits because the address space is 2**8
+    signal branch_out : std_logic; -- the control signal for the mux
+    signal O_Addr_F : std_logic_vector(31 downto 0);
+    signal imm_O_D: std_logic_vector(31 downto 0); -- imm signal
+
     -- decode stage signals
     -- signals to the registerfile and from the memory
     signal alu_sel_signal_f_D : std_logic_vector(2 downto 0);
@@ -143,13 +155,6 @@ architecture behavioral of riscy is
     signal imm_signal_JtypeFour_D : std_logic;
     signal rs1_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
     signal rs2_out_D : std_logic_vector(31 downto 0); -- kommt aus der Registerbank
-    -- from fetch stage signals
-    signal ins_mem_D : std_logic_vector(31 downto 0); -- instruction fetched form the memory
-    signal O_Addr_D : std_logic_vector(31 downto 0); -- from PC.mux
-    signal O_Addr_D2 : std_logic_vector(31 downto 0); -- to PC.mux, we have to downcast 32 bits to 8 bits because the address space is 2**8
-    signal branch_out : std_logic; -- the control signal for the mux
-    signal O_Addr_F : std_logic_vector(31 downto 0);
-    signal imm_O_D: std_logic_vector(31 downto 0); -- imm signal
 
 
     -- execute stage signals
@@ -168,6 +173,7 @@ architecture behavioral of riscy is
     signal sel_opcode_signal_M : opcode;
     signal rd_signal_M : std_logic_vector(4 downto 0);
     signal alu_out_M : std_logic_vector(31 downto 0); -- aus der Alu, somit zweiter Signal aus der
+    
     -- wb stage signals
     signal Data_output_WB: std_logic_vector(31 downto 0);
     signal rd_signal_WB : std_logic_vector(4 downto 0);
@@ -179,7 +185,6 @@ architecture behavioral of riscy is
     signal nWE_D_RAM: std_logic; -- is dependent of the opcode #Todo: need a control station each stage which use the opcode to determine the control signals for the datapath(components)
     signal nWE_X_RAM: std_logic;
     signal nWE_M_RAM: std_logic;
-
     signal nWE_D_R2: std_logic; 
     signal nWE_X_R: std_logic;
     signal nWE_WB_R : std_logic;
@@ -252,14 +257,18 @@ architecture behavioral of riscy is
         I_rs2 => rs2_signal_D,
         I_rd => rd_signal_M,
         I_rd2 => rd_signal_WB,
+        I_rd3 => rd_signal_D, -- only for jump instruction
         I_data_input => Data_output_WB, -- 32 bit from DATAMEM --> Cpu.Register
         I_data_input2 => Data_output_WB_external, 
+        I_data_input3 => O_Addr_D, -- only for jump instruction
         sel_opcode => sel_opcode_signal_M,
-        sel_opcode_lw => sel_opcode_signal_WB,
+        sel_opcode2 => sel_opcode_signal_WB,
+        sel_opcode3 => sel_opcode_signal_D,
         O_rs1_out => rs1_out_D, -- 32 bit output
         O_rs2_out => rs2_out_D, -- 32 bit output
         I_nWE => nWE_WB_R,
-        I_nWE2 => nWE_WB_R2
+        I_nWE2 => nWE_WB_R2,
+        I_nWE3 => nWE_D_R2
     );
 
 
@@ -307,7 +316,7 @@ architecture behavioral of riscy is
     begin
         iAddr <= O_Addr_F; -- to INS MEM
         if rising_edge(clk) then
-            ins_mem_D <= iData; -- 32bit opcode
+            ins_mem_D <= iData; -- 32bit instruction
             O_Addr_D <= O_Addr_F; -- to ALU ADRESSER
         end if;
     end process ;
@@ -335,7 +344,7 @@ architecture behavioral of riscy is
         end if;
     end process;
 
-    pipleinestage_EX_MEM : process(sel_opcode_signal_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, clk) 
+    pipleinestage_EX_MEM : process(sel_opcode_signal_X, nWE_X_RAM, nWE_X_R, rd_signal_X, rs2_out_X2, alu_out_X, clk) 
     begin
 
         -- dieser teil ermoeglicht uns keine nops zu benutzen aber dataoutput aus der RAM funktioniert noch nicht so ganz der teil unten macht schon die arbeit
@@ -348,7 +357,7 @@ architecture behavioral of riscy is
         -- end if;
 
         -- logic for forwarding/bypassing
-        if rising_edge(clk) then
+        --if rising_edge(clk) then
             -- Store
             if sel_opcode_signal_X = OP_REG or sel_opcode_signal_X = OP_IMM  then
                 Data_output_WB <= alu_out_X; -- CPU.Alu to CPU.Reg
@@ -356,6 +365,8 @@ architecture behavioral of riscy is
                 rd_signal_M <= rd_signal_X; -- rd vom bytecode
                 sel_opcode_signal_M <= sel_opcode_signal_X;
                 dnWE <= nWE_X_RAM;
+                dAddr <= (others => '0'); -- rs1+im
+                dDataI <= (others => '0'); -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
             else
                 dAddr <= alu_out_X; -- rs1+im
                 dDataI <= rs2_out_X2; -- m32(rs1+imm) ← rs2[31:0], pc ← pc+4 ; and consider it for LW
@@ -366,7 +377,7 @@ architecture behavioral of riscy is
                 sel_opcode_signal_M <= sel_opcode_signal_X;
                 alu_out_M <= alu_out_X;
             end if;
-        end if;
+        --end if;
     end process;
 
     pipleinestage_MEM_WB : process(sel_opcode_signal_M, dDataO, alu_out_M, rd_signal_M, nWE_M_R, clk) 

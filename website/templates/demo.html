@@ -37,8 +37,8 @@ position: relative;">
                             <span class="btn-label"><i class="fa fa-play"></i></span> | Run</button>
                             <button type="submit" class="btn btn-labeled btn-success" name="step">
                                 <span class="btn-label"><i class="fa fa-paw" aria-hidden="true"></i></span> | Step</button>
-                                <button type="submit" class="btn btn-labeled btn-success" name="stop">
-                                    <span class="btn-label"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></span> | Stop</button>
+                                <button type="submit" class="btn btn-labeled btn-success" name="prev">
+                                    <span class="btn-label"><i class="fa fa-step-backward" aria-hidden="true"></i></i></span> | Prev</button>
                                     <button type="submit" class="btn btn-labeled btn-success" name="clear_state">
                                         <span class="btn-label"><i class="fa fa-shower" aria-hidden="true"></i></span> | Clear state</button>
                     </nav>
@@ -61,7 +61,7 @@ position: relative;">
                         {% for addr, instr in bytecode.items() %}
                         <tr height="100px">
                             <th scope="row">{{addr | upper | replace("X", "x")}}</th>
-                            <td>{{instr}}</td>
+                            <td><mark>{{instr}}</mark></td>
                             <td>{{ '0x{0:08X}'.format(instr | int(base=2)) }}</td>
                             <!-- https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.int -->
                             <!-- https://www.rapidtables.com/convert/number/binary-to-hex.html -->
@@ -86,7 +86,7 @@ position: relative;">
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if reg_and_ram %}
+                                <!-- {% if reg_and_ram %}
                                 {% for reg, val in reg_and_ram["register"].items() %}
                                 <tr>
                                     {% if val != 0  %}
@@ -100,16 +100,28 @@ position: relative;">
                                     {% endif %}
                                 </tr>
                                 {% endfor %}
-                                {% endif %}
+                                {% endif %} -->
 
-                                {% if reg_and_ram2 and switch != False %}
-                                {% for reg, val in reg_and_ram2["register"].items() %}
-                                <tr>
-                                    <th>{{ reg }}</th>
-                                    <th scope="row" >{{val}}</th>
-                                    <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
-                                </tr>
-                                {% endfor %}
+                                {% if pointer_counter == -1 %}
+                                    {% if machine_state_init %}
+                                        {% for reg, val in machine_state_init["register"].items() %}
+                                            <tr>
+                                                <th>{{ reg }}</th>
+                                                <th scope="row" >{{val}}</th>
+                                                <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    
+                                    {% endif %}
+                                {% else %}
+                                    {% for reg, val in machine_state_step["register"].items() %}
+                                    <tr>
+                                        <th>{{ reg }}</th>
+                                        <th scope="row" >{{val}}</th>
+                                        <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                    </tr>
+                                    {% endfor %}
+
                                 {% endif %}
                             </tbody>
                     </table>
@@ -127,20 +139,33 @@ position: relative;">
                             </tr>
                         </thead>
                         <tbody>
-                            {% if reg_and_ram %}
-                            {% for reg, val in reg_and_ram["ram"].items() %}
+
+                        {% if pointer_counter == -1 %}
+                            {% if machine_state_init %}
+                                {% for ram, val in machine_state_init["ram"].items() %}
+                                    <tr>
+                                        <th>{{ ram }}</th>
+                                        <th scope="row" >{{val}}</th>
+                                        <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            
+                            {% endif %}
+                        {% else %}
+                            {% for ram, val in machine_state_step["ram"].items() %}
                             <tr>
-                                <th scope="row">{{ '0x{0:08X}'.format(reg | int(base=2)) }}</th>
-                                <th>{{val}}</th>
+                                <th>{{ ram }}</th>
+                                <th scope="row" >{{val}}</th>
                                 <td>{{ '0x{0:08X}'.format(val | int(base=2)) }}</td>
                             </tr>
                             {% endfor %}
-                            {% endif %}
+
+                        {% endif %}
                         </tbody>
                     </table>
                 </div>
 
-                {% for warning in reg_and_ram["warnings"] %}
+                {% for warning in machine_state_init["warnings"] %}
                 <p style="color:red;"> {{warning}}</p>
                 {% endfor %}
 

@@ -287,8 +287,7 @@ class Instruction:
         if imm <= max and imm >= min:
             return imm
         else:
-            raise Exception(
-                f"{self.line}: imm must be in inclusive interval of {min} and {max}\n")
+            raise Exception(f"{self.line}: imm must be in inclusive interval of {min} and {max}\n")
 
     def checkRegister(self, reg):
         """Does the speciefied register exists or not.
@@ -343,13 +342,15 @@ class Instruction:
         return reg
 
     def returnRegister(self, machine_state, reg):
+        assert "register" in machine_state.keys(), "register is not declared in machine_state!"
+        
         """Like the name, it retunes the value of the named register (reg(string)).
 
         Returns:
             reg(int): value of specified register
         """
         
-        self.checkRegister(machine_state, reg)
+        self.checkRegister(reg)
         if reg not in machine_state["register"].keys(): # vielleicht doppelt gemoppelt, da schon alles mit 0 init ist
             reg_entry = 0
         else:
@@ -394,7 +395,7 @@ class Instruction:
 
         # r type instructions:
         if instr in ["add", "and", "or", "sll", "slt", "sltu", "sra", "srl", "sub", "xor"]:
-            rd = self.checkRegister(machine_state, arguments[0])
+            rd = self.checkRegister(arguments[0])
             rs1 = self.returnRegister(machine_state, arguments[1])
             rs2 = self.returnRegister(machine_state, arguments[2])
             #     ADD, SUB: addition of rs1 and rs2; rd = rs1 + rs2; ADD rd rs1 rs2
@@ -447,7 +448,7 @@ class Instruction:
 
 #     ADDI (Add imidiate): sign-extended 12-bit immediate to register rs1 (ADDI rd, rs1, 0)
         elif instr == "addi":
-            target = self.checkRegister(machine_state, arguments[0])
+            target = self.checkRegister(arguments[0])
             source = self.returnRegister(machine_state, arguments[1])
             if arguments[1] not in machine_state["register"].keys():
                 source = 0
